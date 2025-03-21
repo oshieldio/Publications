@@ -213,7 +213,7 @@ Following the original LP provider's funding parents:
 
 The LP tokens created by `Abitb5UpKTrxpjuh8u9zcCQRY5LChCuUcyK4c4c3Yu8i` are sent to `B2JRgMXGEEwvYjP2YiJbzH5jSNAahu6gUMCKbejxtmTH` and then burnt which means all these wallets are most certainly the same person just trying to camouflage themselves or their intimate relationships. 
 
-![SOSA LP token history](graphics/sosa-lp-token-history.jpg)
+![SOSA LP token history](graphics/sosa-LP-token-history.jpg)
 
 Notably, `FDfBPA7fxLjGsUG7anuRkGP7cvngptNTg879jfCykrGT` received 21B SOSA directly from the token creator even before getting funded with 380 SOL from `2YyuEm5R7v9KmYWfUvXyW6jdqp9DGtavXHNdLXjJAiYy`. This strongly suggests that the token creator and the original LP provider are connected.
 
