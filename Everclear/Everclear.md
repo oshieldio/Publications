@@ -1,7 +1,7 @@
 # Everclear Program Audit Report
 
 <div align="center">
-<img src="../../logo/logo.png" width="200" height="200" alt="OShield Logo">
+<img src="../logo/logo.png" width="200" height="200" alt="OShield Logo">
 </div>
 
 **Authors:**  
