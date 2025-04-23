@@ -1,4 +1,4 @@
 # Publications
 
 
-Security Audit Reprots by [Mad Shield](https://madshield.xyz)
+Security Audit Reprots by [OShield](https://madshield.xyz)
