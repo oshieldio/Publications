@@ -1,3 +1,4 @@
+
 # HYPERION DEX-V3 Audit Report
 
 <div align="center">
@@ -9,6 +10,12 @@
 - BlueWolf – wolf@oshield.io
 - Mikb – mika@oshield.io
 
+## Executive Summary
+
+OShield performed a thorough audit of the Hyperion DEX-V3 protocol, a decentralized exchange on the Aptos blockchain featuring a hybrid Orderbook-AMM model. The audit identified six vulnerabilities: two high-severity issues ([HYPERION-H1](#HYPERION-h1-price-limit-bypass-and-tick-desynchronization-in-swap-execution-in-pool_v3move): Price Limit Bypass and Tick Desynchronization in `pool_v3.move`, and [HYPERION-H2](#HYPERION-h2-token-type-mismatch-in-pool-creation-in-router_v3move): Token Type Mismatch in `router_v3.move`), one medium-severity issue ([HYPERION-M1](#HYPERION-m1-seconds-outside-not-initialized-on-creation-in-tickmove): Seconds Outside Not Initialized in `tick.move`), and three informational issues ([HYPERION-I1](#HYPERION-i1-unnecessary-tick-rounding-in-pool-creation-in-pool_v3move), [I2](#HYPERION-i2-missing-emission-verification-in-tickmove), [I3](#HYPERION-i3-missing-view-attributes-in-pool_v3move)). The high-severity issues, which could lead to recoverable financial harm and affect user intent, were swiftly addressed through collaboration with the Hyperion development team, reflecting their proactive security stance.
+
+The audit employed a robust methodology, including code review, mathematical verification, threat modeling, vulnerability testing, and architectural analysis, with a focus on economic risks and edge cases. Formal verification leveraged the Aptos Move prover, with custom scripts to resolve type conversion challenges in the Move-to-Boogie transpilation process. Key proofs validated critical functionalities such as tick crossing, fee growth updates, liquidity management, and reward system operations, ensuring protocol reliability. OShield’s recommendations aim to bolster long-term security and resilience, solidifying Hyperion DEX-V3’s role as a dependable component in the Aptos ecosystem.
+
 ## Table of Contents
 - [HYPERION DEX-V3 Audit Report](#HYPERION-dex-v3-audit-report)
 	- [Table of Contents](#table-of-contents)
@@ -16,7 +23,7 @@
 	- [2. Findings \& Recommendations](#2-findings--recommendations)
 		- [2.1. Findings Summary](#21-findings-summary)
 		- [2.2. Findings Description](#22-findings-description)
-			- [HYPERION-H1: Price Limit Bypass and Tick Desynchronization in Swap Execution in `pool_v3.move`](#HYPERION-c1-price-limit-bypass-and-tick-desynchronization-in-swap-execution-in-pool_v3move)
+			- [HYPERION-H1: Price Limit Bypass and Tick Desynchronization in Swap Execution in `pool_v3.move`](#HYPERION-h1-price-limit-bypass-and-tick-desynchronization-in-swap-execution-in-pool_v3move)
 			- [HYPERION-H2: Token Type Mismatch in Pool Creation in `router_v3.move`](#HYPERION-h1-token-type-mismatch-in-pool-creation-in-router_v3move)
 			- [HYPERION-M1: Seconds Outside Not Initialized on Creation in `tick.move`](#HYPERION-m1-seconds-outside-not-initialized-on-creation-in-tickmove)
 			- [HYPERION-I1: Unnecessary Tick Rounding in Pool Creation in `pool_v3.move`](#HYPERION-i1-unnecessary-tick-rounding-in-pool-creation-in-pool_v3move)
@@ -30,7 +37,9 @@
  	- [5 Formal Verification](#5-formal-verification)
 	- [6. Scope and Objectives](#6-scope-and-objectives)
 		- [Repository Information](#repository-information)
-	- [7. Conclusion](#7-conclusion)
+
+
+
 
 ## 1. Introduction
 
@@ -817,12 +826,12 @@ Our audit methodology for the hyperion DEX-V3 protocol followed a systematic app
 
 7. **Proof Execution and Debugging**: To run proofs for the protocol, we initially used the Aptos Move prover. However, as the Move language does not support signed integer arithmetic, there is a standalone package developed by the Hyperion team to do i32, i64 and i128 mathematical operations. This library causes the Move to Boogie transpiler in the aptos prover to fail to do correct type conversions for some of the proofs. This was a random occurence due the inherent randomness in the compilation process but it forced us to write a script that would manually pick up the outputted boogie file from the aptos move prover and correct them according to the following rules that we extracted by observing the error patterns in the compilation result: 
 
-- Converting int to bv32 in $bb_i32_I32 constructor calls using $int2bv.32.
-- Adding $bv2int.32 to assignments where bv32 values are assigned to int.
-- Removing unnecessary $int2bv.32 conversions when applied to bv32 values.
-- Fixing i32_lte comparisons by ensuring arguments are converted to bv32.
-- Adjusting procedure definitions (e.g., $i32_from_u8, $i32_sign, $i32_u32_neg) to use bv32 instead of int.
-- Updating constants like $tick_math_max_tick to use bv32 literals.
+- Converting `int` to `bv32` in `$bb_i32_I32` constructor calls using `$int2bv.32`.
+- Adding `$bv2int.32` to assignments where `bv32` values are assigned to `int`.
+- Removing unnecessary `$int2bv.32` conversions when applied to `bv32` values.
+- Fixing `i32_lte` comparisons by ensuring arguments are converted to `bv32`.
+- Adjusting procedure definitions (e.g., `$i32_from_u8`, `$i32_sign`, `$i32_u32_neg`) to use `bv32` instead of `int`.
+- Updating constants like `$tick_math_max_tick` to use `bv32` literals.
  
 For any proof that would fail due to these errors, we then run the script first to replace and restore the types correctly before running the boogie command explicity on the modified file. We have provided the boogie files for all the specifications that required this boogie intermediate manipulation step for reader to independently check the results. 
 
@@ -1463,9 +1472,4 @@ The primary objectives of the audit are defined as:
 | Commit (start of audit) | a38458c536703115d5c9ad8a6202b6bc53481680 |
 | Commit (end of audit) | 3cb6854e54ee50eab707fb3cc8d8fe0e4e8e4008 (Oshield Branch)|
 
-## 7. Conclusion
-OShield conducted an extensive audit of Hyperion DEX-V3, utilizing a hands-on methodology that prioritizes a detailed, immersive review of the program. Our team's approach is rooted in active collaboration, working closely with each unique project to identify potential security risks and mitigate vulnerabilities effectively.
-OShield's dedication to advancing auditing techniques is clear throughout our process. We consistently apply innovative strategies, allowing us to analyze the code at a granular level, simulate real-world scenarios, and uncover potential risks that traditional audits might miss.
 
-OShield identified 2 high-severity, 1 medium-severity, and 3 informational-severity. Through active collaboration with the development team, all high-risk issues were resolved. The development team's responsive approach to addressing findings and commitment to implementing recommended fixes indicates a strong security-first mindset.
-Our recommendations focus on strengthening the codebase to enhance long-term security and resilience. OShield remains committed to setting new standards in smart contract auditing.
