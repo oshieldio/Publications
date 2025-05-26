@@ -44,7 +44,7 @@ Our severity classification system adheres to the criteria outlined here.
 | Severity Level | Exploitability | Potential Impact | Examples |
 |----------------|----------------|------------------|-----------|
 | 🔴 Critical | Low to moderate difficulty, 3rd-party attacker | Irreparable financial harm | Direct theft of funds, permanent freezing of tokens/NFTs |
-| 🔶 High | High difficulty, external attacker or specific user interactions | Recoverable financial harm | Temporary freezing of assets |
+| 🟠 High | High difficulty, external attacker or specific user interactions | Recoverable financial harm | Temporary freezing of assets |
 | 🟡 Medium | Unexpected behavior, potential for misuse | Limited to no financial harm, non-critical disruption | Escalation of non-sensitive privilege, program malfunctions |
 | 🔵 Low | Implementation variance, uncommon scenarios | Zero financial implications, minor inconvenience | Program crashes in rare situations |
 | ℹ️ Informational | N/A | Recommendations for improvement | Design enhancements, best practices |
@@ -53,8 +53,8 @@ Our severity classification system adheres to the criteria outlined here.
 
 | Finding | Description | Severity Level |
 |---------|-------------|----------------|
-| [HYPERION-H1]| Price Limit Bypass and Tick Desynchronization in Swap Execution in `pool_v3.move` | 🔶 High |
-| [HYPERION-H2]| Token Type Mismatch in Pool Creation in `router_v3.move` | 🔶 High |
+| [HYPERION-H1]| Price Limit Bypass and Tick Desynchronization in Swap Execution in `pool_v3.move` | 🟠 High |
+| [HYPERION-H2]| Token Type Mismatch in Pool Creation in `router_v3.move` | 🟠 High |
 | [HYPERION-M1]| Seconds Outside Not Initialized on Creation in `tick.move` | 🟡 Medium |
 | [HYPERION-I1]| Unnecessary Tick Rounding in Pool Creation in `pool_v3.move` | ℹ️ Informational |
 | [HYPERION-I2]| Missing Emission Verification in `tick.move` | ℹ️ Informational |
