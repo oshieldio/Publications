@@ -872,6 +872,7 @@ spec cross {
         ensures info.seconds_outside == time - old(info.seconds_outside);
     }
 ```
+---
 #### 2. Tick Crossing Fee Growth Update Proof
 
 This proof verifies the correctness of fee growth updates for tokens A and B during a tick crossing in a concentrated liquidity market maker. It establishes preconditions to ensure that global fee growth values (`fee_growth_global_a` and `fee_growth_global_b`) exceed their respective outside values in the tick (`info.fee_growth_outside_a` and `info.fee_growth_outside_b`), preventing underflow during subtraction. The proof further validates that the `fee_growth_outside_a` and `fee_growth_outside_b` fields in the `info` structure are accurately updated by subtracting their previous values from the corresponding global fee growth values, ensuring correct arithmetic updates.
@@ -891,7 +892,7 @@ spec cross {
     // This line ensures that `fee_growth_outside_b` in `info` is updated by subtracting its previous value (`old(info.fee_growth_outside_b)`) from `fee_growth_global_b`, confirming proper fee growth updates.
 }
 ```
-
+---
 #### 3. Tick Liquidity and Initialization Consistency Proof
 
 This proof ensures the consistency of a tick's liquidity and initialization state in a concentrated liquidity market maker. It verifies that a tick with zero gross liquidity is marked as uninitialized, and a tick with positive gross liquidity is marked as initialized. This synchronization is critical for accurately tracking active liquidity positions and correctly calculating state changes during tick updates, ensuring reliable swap pricing and position management.
@@ -906,7 +907,7 @@ spec update {
 }
 ```
 > boogie_update.bpl [link](./Boogies/boogie_update.bpl)
-
+---
 ### Rewarder.move
 
 #### 1. Flash Function Timestamp Validation Proof
@@ -926,7 +927,7 @@ This proof verifies the correctness of the timestamp update mechanism in the fla
         // This line guarantees that after execution, the manager's last updated time is set to the current timestamp, confirming the time update mechanism works as expected.
     }
 ```
-
+---
 #### 2. RewarderManager Initialization Proof
 
 This proof verifies the correct initialization of the `RewarderManager` in a concentrated liquidity market maker's reward system. It ensures that the initialization aborts if the Aptos framework's timestamp mechanism is unavailable, providing a critical safety check. The proof confirms that the `RewarderManager` starts with an empty rewarders list, sets the initial timestamp to the current time, and initializes in an unpaused state, ensuring proper setup for subsequent operations.
@@ -946,7 +947,7 @@ This proof verifies the correct initialization of the `RewarderManager` in a con
         // This line confirms the RewarderManager begins in an unpaused state, allowing immediate operation after initialization.
     }
 ```
-
+---
 #### 3. Pause State Control Proof
 
 This proof verifies the correct operation of the pause state control mechanism in a concentrated liquidity market maker's reward system. It ensures that the `manager.pause` state is accurately set to the input `pause_state` parameter after execution, confirming the reliability of the pause control functionality.
@@ -957,7 +958,7 @@ This proof verifies the correct operation of the pause state control mechanism i
         // This line confirms that after function execution, the manager's pause state exactly matches the input parameter, verifying the control mechanism works correctly.
     }
 ```
-
+---
 #### 4. Rewarder Incentive Addition Validation Proof
 
 This proof verifies the safe addition of incentive assets to a specific rewarder in the reward system. It establishes preconditions to ensure the target rewarder index is valid, preventing out-of-bounds access to the rewarders vector. It also confirms the chronological integrity of the timestamp for reward state updates and the availability of the Aptos framework's timestamp mechanism. The proof ensures that post-execution, the specified rewarder is in an unpaused state, enabling proper reward distribution.
@@ -980,7 +981,7 @@ This proof verifies the safe addition of incentive assets to a specific rewarder
         // This line guarantees that after execution, the rewarder is in an unpaused state, ready to distribute rewards properly.
     }
 ```
-
+---
 #### 5. Rewarder Incentive Removal Safety Proof
 
 This proof verifies the safe removal of incentive assets from a specific rewarder in a concentrated liquidity market maker's reward system. It establishes preconditions to ensure the rewarder index is valid, preventing out-of-bounds access, and confirms the rewarder is unpaused to maintain operational integrity. The proof further validates sufficient balance in the rewarder's store after accounting for user-owed rewards, preventing underflow. Additionally, it ensures the current timestamp is valid for reward state updates and confirms the availability of the Aptos framework's timestamp mechanism, ensuring reliable time-based operations.
@@ -1007,7 +1008,7 @@ This proof verifies the safe removal of incentive assets from a specific rewarde
         // This line verifies the timestamp mechanism is available for time-based operations.
     }
 ```
-
+---
 #### 6. Rewarder Pause Transition Validation Proof
 
 This proof verifies the safe removal of incentives and the transition of a specific rewarder to a paused state in the reward system. It establishes preconditions to ensure the rewarder index is valid, preventing out-of-bounds access to the rewarders vector. The proof also confirms the chronological integrity of the timestamp for reward state updates and the availability of the Aptos framework's timestamp mechanism. It ensures that post-execution, the specified rewarder is correctly set to a paused state, confirming the orderly shutdown of reward distribution.
@@ -1030,7 +1031,7 @@ This proof verifies the safe removal of incentives and the transition of a speci
         // This line verifies that after execution, the rewarder is successfully transitioned to a paused state, confirming the core purpose of the function.
     }
 ```
-
+---
 #### 7. Rewarder Owed Value Update Validation Proof
 
 This proof verifies the accurate updating of the `user_owed` value for a specific rewarder in the reward system. It establishes preconditions to ensure the rewarder index is valid, preventing out-of-bounds access, and confirms that the reward manager is not paused, validating the operational state. The proof ensures that the `user_owed` field is precisely set to the provided value post-execution, maintaining data integrity. Additionally, it verifies that the function aborts with a specific error if the manager is paused, ensuring robust error handling.
@@ -1050,8 +1051,7 @@ This proof verifies the accurate updating of the `user_owed` value for a specifi
         // This line explicitly documents that the function will abort with a specific error if the manager is paused, providing clear error handling.
     }
 ```
-
-
+---
 #### 8. Position Reward Update State Preservation Proof
 
 This proof verifies the correct updating of position rewards in the reward system while ensuring the preservation of the `reward_manager` state. It establishes preconditions to confirm that the `position_emissions_per_liquidity_inside_list` has sufficient entries to process all rewarders, preventing out-of-bounds access, and that the `reward_tickets` vector is appropriately sized relative to the rewarders list. The proof ensures that the `reward_manager` state remains unchanged post-execution, validating that the function only modifies local variables and return values.
@@ -1068,7 +1068,7 @@ This proof verifies the correct updating of position rewards in the reward syste
         // This line verifies that the reward_manager state remains unchanged after execution, confirming the function only affects local variables and return values.
     }
 ```
-
+---
 #### 9. Add Rewarder Proof New Rewarder Configuration
 
 This proof verifies the correct configuration and addition of a new rewarder in the reward system. It establishes preconditions to ensure the proposed emission rate does not exceed the maximum allowable rate and validates the chronological integrity of the timestamp for reward state updates. The proof ensures that post-execution, a rewarder exists in the `manager.rewarders` vector with the specified emission rates and that the rewarders list is non-empty, confirming successful and valid rewarder addition.
@@ -1090,7 +1090,7 @@ This proof verifies the correct configuration and addition of a new rewarder in 
         // This line verifies that the rewarders list is not empty after execution, ensuring at least one rewarder exists.
     }
 ```
-
+---
 #### 10. Rewarder Maximum Emission Rate Update Proof
 
 This proof verifies the safe adjustment of the maximum emission rate for a specific rewarder in the reward system. It establishes preconditions to ensure the rewarder index is valid, preventing out-of-bounds access, and confirms that the new maximum emission rate is non-zero and not less than the current emission rate, maintaining rate consistency and preventing calculation errors. The proof also validates the availability of the Aptos framework's timestamp mechanism and the chronological integrity of the timestamp for reward state updates. It ensures that post-execution, the rewarder's maximum emission rate is correctly updated to the specified value.
@@ -1116,7 +1116,7 @@ This proof verifies the safe adjustment of the maximum emission rate for a speci
         // This line guarantees that after execution, the maximum emission rate is updated to the specified value, confirming successful rate adjustment.
     }
 ```
-
+---
 #### 11. Rewarder Emission Rate Update Validation Proof
 
 This proof verifies the safe update of the current emission rate for a specific rewarder in the reward system. It establishes preconditions to ensure the rewarder index is valid, preventing out-of-bounds access, and confirms that the new emission rate is non-zero and does not exceed the maximum allowable rate, maintaining rate integrity. The proof also validates sufficient pool liquidity for the associated flash function, the availability of the Aptos framework's timestamp mechanism, and the chronological integrity of the timestamp for reward state updates. It ensures that post-execution, the rewarder's emission rate is correctly updated to the specified value.
@@ -1145,9 +1145,8 @@ This proof verifies the safe update of the current emission rate for a specific 
         // This line guarantees that after execution, the emission rate is updated to the specified value, confirming successful rate adjustment.
     }
 ```
-
+---
 ### Pool_v3.move
-
 
 #### 1. Pool Liquidity Delta Validation Proof
 
@@ -1164,9 +1163,8 @@ spec merge_into_pool {
 }
 ```
 > boogie_merge_into_pool_1.bpl [link](./Boogies/boogie_merge_into_pool_1.bpl)
-
+---
 #### 2. Pool Liquidity Update Range Validation 
-
 
 This proof verifies the correct update of pool liquidity during the `merge_into_pool` function. It ensures that when the pool's current tick is within the range `[tick_lower, tick_upper)`, the pool's liquidity is correctly increased by `liquidity_delta`. Conversely, it confirms that if the current tick is outside this range, the pool's liquidity remains unchanged, ensuring accurate liquidity management based on the tick range.
 
@@ -1186,8 +1184,7 @@ spec merge_into_pool {
 }
 ```
 > boogie_merge_into_pool_2.bpl [link](./Boogies/boogie_merge_into_pool_2.bpl)
-
-
+---
 #### 3. Pool Liquidity Delta Zero Abort Proof
 
 This proof verifies that the `merge_into_pool` function aborts if the `liquidity_delta` is zero. It ensures that the function enforces proper validation by aborting under this condition, preventing invalid liquidity changes and maintaining the integrity of pool operations.
@@ -1203,8 +1200,7 @@ spec merge_into_pool {
 }
 ```
 > boogie_merge_into_pool_3.bpl [link](./Boogies/boogie_merge_into_pool_3.bpl)
-
-
+---
 #### 4. Pool Deposit Amounts by Tick Range Proof
 
 This proof verifies that the `merge_into_pool` function correctly calculates and deposits `amount_a` and `amount_b` based on the pool's tick position relative to the range `[tick_lower, tick_upper)`. It ensures accurate tuple return values and pool balance updates for three cases: when the pool's tick is below, within, or above the specified range. Specifically, it confirms that the function adjusts token A and/or token B balances appropriately and returns the correct remaining amounts in the tuple. The proof returned an inconclusive result during verification, indicating that no issues were identified within the limits of the hardware used, but further analysis may be required to ensure completeness.
@@ -1280,7 +1276,7 @@ spec merge_into_pool {
 }
 ```
 > boogie_merge_into_pool_4.bpl [link](./Boogies/boogie_merge_into_pool_4.bpl)
-
+---
 #### 5. Pool Zero Liquidity Delta Handling Proof
 
 This proof verifies that the `dividen_from_pool` function correctly handles a zero `liquidity_delta`. It ensures that when `liquidity_delta` is zero, the function returns zero values for `amount_a` and `amount_b`, empty `Option<FungibleAsset>` values for the associated results, and maintains the pool's liquidity unchanged, preventing unintended state modifications.
@@ -1299,7 +1295,7 @@ spec dividen_from_pool {
 }
 ```
 > boogie_dividen_from_pool_1.bpl [link](./Boogies/boogie_dividen_from_pool_1.bpl)
-
+---
 #### 6. Pool Liquidity Decrease Range Validation Proof
 
 This proof verifies the correct handling of liquidity decreases in the `dividen_from_pool` function of a concentrated liquidity market maker. It ensures that when the pool's current tick is within the range `[tick_lower, tick_upper)`, the pool's liquidity is decreased by `liquidity_delta`, provided there is sufficient liquidity to prevent underflow. The proof also confirms that if the tick is outside this range or if `liquidity_delta` is zero, the pool's liquidity remains unchanged. Additionally, it validates the tick range and enforces an abort condition to prevent underflow, ensuring robust liquidity management.
@@ -1334,7 +1330,7 @@ spec dividen_from_pool {
 }
 ```
 > boogie_dividen_from_pool_2.bpl [link](./Boogies/boogie_dividen_from_pool_2.bpl)
-
+---
 #### 7. Pool Withdrawal Amounts by Tick Range Proof
 
 This proof verifies that the `dividen_from_pool` function correctly calculates withdrawal amounts `amount_a` and `amount_b` based on the pool's tick position relative to the range `[tick_lower, tick_upper)`. It ensures accurate return values for token A and token B and, when the tick is within the range, confirms that the pool's liquidity is decreased by `liquidity_delta`. The proof covers three cases: below, within, and above the specified range, ensuring proper handling of withdrawal amounts and liquidity updates. The proof returned an inconclusive result during verification, indicating that no issues were identified within the limits of the hardware used, but further analysis may be required to ensure completeness.
@@ -1399,7 +1395,7 @@ spec dividen_from_pool {
 }
 ```
 > boogie_dividen_from_pool_3.bpl [link](./Boogies/boogie_dividen_from_pool_3.bpl)
-
+---
 #### 8. Add Liquidity Proof Balance
 
 This proof verifies that the `add_liquidity` function correctly updates the pool's token A and token B balances and liquidity without asset loss. It ensures that the post-execution balances of token A and token B reflect the addition of the specified amounts (`amount_a` and `amount_b`) to their respective initial balances. Additionally, it confirms that the pool's liquidity either increases or remains unchanged, maintaining the integrity of the liquidity addition process.
@@ -1444,7 +1440,7 @@ spec add_liquidity {
 }
 ```
 > boogie_add_liquidity.bpl [link](./Boogies/boogie_add_liquidity.bpl)
-
+---
 ## 6. Scope and Objectives
 
 The primary objectives of the audit are defined as:
