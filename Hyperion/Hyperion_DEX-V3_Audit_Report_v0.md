@@ -73,19 +73,9 @@ Our severity classification system adheres to the criteria outlined here.
 
 ##### Description
 
-In the [`pool_v3.move`](https://github.com/hyperionxyz/dex-v3/tree/main/sources/v3/pool_v3.move) module, there is an implementation issues that creates a systemic risk affecting trade execution precision, price reporting, and slippage protection. This finding is supported by data analysis of transaction patterns and detailed code review, and affect every swap that uses price limits, placing user funds at risk.
+In the [`pool_v3.move`](https://github.com/hyperionxyz/dex-v3/tree/main/sources/v3/pool_v3.move) module, there is an implementation issues that creates a systemic risk affecting trade execution precision, price reporting, and slippage protection. This finding is detailed code review, and affect every swap that uses price limits, placing user funds at risk.
 
-The issue relates to incorrect price limit enforcement in the `swap` function:
-
-```move
-while(state.amount_specified_remaining != 0 && state.sqrt_price != sqrt_price_limit) {
-    // Swap execution logic
-}
-```
-
-This implementation fails to enforce price limits correctly due to this:
-
- **Missing Target Price Logic**: In the swap computation, the implementation fails to implement critical price limit validation logic. There should be logic in the code to determine the closest of the limit_price and the next_tick price up to which the swap will continue to execute. This is done as follows:
+In the swap computation, the implementation fails to implement critical price limit validation logic. There should be logic in the code to determine the closest of the limit_price and the next_tick price up to which the swap will continue to execute. This is done as follows:
 
 ```move
 let target_price = if(a2b) {
