@@ -12,7 +12,7 @@
 
 ## Executive Summary
 
-OShield performed a thorough audit of the Hyperion DEX-V3 protocol, a decentralized exchange on the Aptos blockchain featuring a hybrid Orderbook-AMM model. The audit identified six vulnerabilities: two high-severity issues ([HYPERION-H1](#HYPERION-h1-price-limit-bypass-and-tick-desynchronization-in-swap-execution-in-pool_v3move): Price Limit Bypass and Tick Desynchronization in `pool_v3.move`, and [HYPERION-H2](#HYPERION-h2-token-type-mismatch-in-pool-creation-in-router_v3move): Token Type Mismatch in `router_v3.move`), one medium-severity issue ([HYPERION-M1](#HYPERION-m1-seconds-outside-not-initialized-on-creation-in-tickmove): Seconds Outside Not Initialized in `tick.move`), and two informational issues ([HYPERION-I1](#HYPERION-i1-unnecessary-tick-rounding-in-pool-creation-in-pool_v3move), [I2](#HYPERION-i2-missing-emission-verification-in-tickmove). The high-severity issues, which could lead to recoverable financial harm and affect user intent, were swiftly addressed through collaboration with the Hyperion development team, reflecting their proactive security stance.
+OShield performed a thorough audit of the Hyperion DEX-V3 protocol, a decentralized exchange on the Aptos blockchain featuring a hybrid Orderbook-AMM model. The audit identified six vulnerabilities: one high-severity issue ([HYPERION-H1](#HYPERION-h1-price-limit-bypass-and-tick-desynchronization-in-swap-execution-in-pool_v3move): Price Limit Bypass and Tick Desynchronization in `pool_v3.move`, two medium-severity issues [HYPERION-M1](#HYPERION-m1-token-type-mismatch-in-pool-creation-in-router_v3move): Token Type Mismatch in `router_v3.move`),and ([HYPERION-M2](#HYPERION-M2-seconds-outside-not-initialized-on-creation-in-tickmove): Seconds Outside Not Initialized in `tick.move`), and two informational issues ([HYPERION-I1](#HYPERION-i1-unnecessary-tick-rounding-in-pool-creation-in-pool_v3move), [I2](#HYPERION-i2-missing-emission-verification-in-tickmove). The high-severity issue, which could lead to recoverable financial harm and affect user intent, was swiftly addressed through collaboration with the Hyperion development team, reflecting their proactive security stance.
 
 The audit employed a robust methodology, including code review, mathematical verification, threat modeling, vulnerability testing, and architectural analysis, with a focus on economic risks and edge cases. Formal verification leveraged the Aptos Move prover, with custom scripts to resolve type conversion challenges in the Move-to-Boogie transpilation process. Key proofs validated critical functionalities such as tick crossing, fee growth updates, liquidity management, and reward system operations, ensuring protocol reliability. OShield’s recommendations aim to bolster long-term security and resilience, solidifying Hyperion DEX-V3’s role as a dependable component in the Aptos ecosystem.
 
@@ -24,8 +24,8 @@ The audit employed a robust methodology, including code review, mathematical ver
 		- [2.1. Findings Summary](#21-findings-summary)
 		- [2.2. Findings Description](#22-findings-description)
 			- [HYPERION-H1: Price Limit Bypass and Tick Desynchronization in Swap Execution in `pool_v3.move`](#HYPERION-h1-price-limit-bypass-and-tick-desynchronization-in-swap-execution-in-pool_v3move)
-			- [HYPERION-H2: Token Type Mismatch in Pool Creation in `router_v3.move`](#HYPERION-h1-token-type-mismatch-in-pool-creation-in-router_v3move)
-			- [HYPERION-M1: Seconds Outside Not Initialized on Creation in `tick.move`](#HYPERION-m1-seconds-outside-not-initialized-on-creation-in-tickmove)
+			- [HYPERION-M1: Token Type Mismatch in Pool Creation in `router_v3.move`](#HYPERION-m1-token-type-mismatch-in-pool-creation-in-router_v3move)
+			- [HYPERION-M2: Seconds Outside Not Initialized on Creation in `tick.move`](#HYPERION-m2-seconds-outside-not-initialized-on-creation-in-tickmove)
 			- [HYPERION-I1: Unnecessary Tick Rounding in Pool Creation in `pool_v3.move`](#HYPERION-i1-unnecessary-tick-rounding-in-pool-creation-in-pool_v3move)
 			- [HYPERION-I2: Missing Emission Verification in `tick.move`](#HYPERION-i2-missing-emission-verification-in-tickmove)
 	- [3. Protocol Overview](#3-protocol-overview)
@@ -62,8 +62,8 @@ Our severity classification system adheres to the criteria outlined here.
 | Finding | Description | Severity Level |
 |---------|-------------|----------------|
 | [HYPERION-H1]| Price Limit Bypass and Tick Desynchronization in Swap Execution in `pool_v3.move` | 🟠 High |
-| [HYPERION-H2]| Token Type Mismatch in Pool Creation in `router_v3.move` | 🟠 High |
-| [HYPERION-M1]| Seconds Outside Not Initialized on Creation in `tick.move` | 🟡 Medium |
+| [HYPERION-M1]| Token Type Mismatch in Pool Creation in `router_v3.move` | 🟡 Medium |
+| [HYPERION-M2]| Seconds Outside Not Initialized on Creation in `tick.move` | 🟡 Medium |
 | [HYPERION-I1]| Unnecessary Tick Rounding in Pool Creation in `pool_v3.move` | ℹ️ Informational |
 | [HYPERION-I2]| Missing Emission Verification in `tick.move` | ℹ️ Informational |
 
@@ -167,7 +167,7 @@ This change aligns the implementation with Uniswap V3's standard behavior, where
 - [View File ](https://github.com/hyperionxyz/dex-v3/blob/3cb6854e54ee50eab707fb3cc8d8fe0e4e8e4008/sources/v3/pool_v3.move#L1921-L1936)
 - [View Commit ](https://github.com/hyperionxyz/dex-v3/commit/3cb6854e54ee50eab707fb3cc8d8fe0e4e8e4008#diff-4df44619a3e80d7da552eb8697dcc578837256cd3c46b1842a8213584601ca28R1921)
 
-#### HYPERION-H2: Token Type Mismatch in Pool Creation in `router_v3.move`
+#### HYPERION-M1: Token Type Mismatch in Pool Creation in `router_v3.move`
 
 ##### Description
 
@@ -220,7 +220,7 @@ public entry fun create_pool_both_coins<CoinType1, CoinType2>(
 - [View Commit ](https://github.com/hyperionxyz/dex-v3/commit/a2301eb1a8833b4f72600cf12b61ef2c7dc1e69a)
 
 
-#### HYPERION-M1: Seconds Outside Not Initialized on Creation in `tick.move`
+#### HYPERION-M2: Seconds Outside Not Initialized on Creation in `tick.move`
 
 ##### Description
 
