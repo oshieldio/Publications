@@ -92,37 +92,6 @@ This implementation fails to enforce price limits correctly due to three fundame
    - For token1 to token0 swaps (`a2b = false`), the price must stop *before* rising to or above the limit
    - The current implementation violates these requirements by allowing prices to reach or cross the limit
 
-3. **Potential Limit Overshooting and Non-Compliance with Uniswap V3**: In the swap computation, the implementation fails to implement a critical price limit safeguard that is standard in Uniswap V3. Specifically, `swap_math::compute_swap_step` passes arbitrary next prices without validating against the user's limit:
-
-```move
-// At line 1634
-let (amount_in, amount_out, next_sqrt_price, fee_amount) =
-    swap_math::compute_swap_step(
-        state.sqrt_price,
-        sqrt_price_next,  // Next tick price without limit validation
-        state.liquidity,
-        state.amount_specified_remaining,
-        pool_mut.fee_rate,
-        a2b,
-        by_amount_in
-    );
-```
-
-This implementation deviates from Uniswap V3's standard behavior, where the code explicitly caps the target price at the user's limit when the next tick would cross it:
-
-```solidity
-// Uniswap V3 implementation in UniswapV3Pool.sol
-(state.sqrtPriceX96, step.amountIn, step.amountOut, step.feeAmount) = SwapMath.computeSwapStep(
-    state.sqrtPriceX96,
-    (zeroForOne ? step.sqrtPriceNextX96 < sqrtPriceLimitX96 : step.sqrtPriceNextX96 > sqrtPriceLimitX96)
-        ? sqrtPriceLimitX96  // Cap at limit if next tick would cross it
-        : step.sqrtPriceNextX96,
-    state.liquidity,
-    state.amountSpecifiedRemaining,
-    fee
-);
-```
-
 This omission in Hyperion allows the price to overshoot the user's limit in a single step when the next tick boundary lies beyond the limit. The lack of this standard safeguard means price updates can violate user intent without detection.
 
 ##### Impact
