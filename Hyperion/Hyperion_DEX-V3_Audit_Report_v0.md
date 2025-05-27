@@ -83,11 +83,9 @@ while(state.amount_specified_remaining != 0 && state.sqrt_price != sqrt_price_li
 }
 ```
 
-This implementation fails to enforce price limits correctly due to three fundamental flaws:
+This implementation fails to enforce price limits correctly due to this:
 
-1. **Strict Equality Comparison**: The loop uses a strict equality check (`!=`) that only terminates when the price *exactly* equals the limit. Given the discrete nature of tick-based price movements, this exact match is mathematically unlikely, especially with non-tick-aligned price limits.
-
-2. **Missing Target Price Logic**: In the swap computation, the implementation fails to implement critical price limit validation logic. There should be logic in the code to determine the closest of the limit_price and the next_tick price up to which the swap will continue to execute. This is done as follows:
+ **Missing Target Price Logic**: In the swap computation, the implementation fails to implement critical price limit validation logic. There should be logic in the code to determine the closest of the limit_price and the next_tick price up to which the swap will continue to execute. This is done as follows:
 
 ```move
 let target_price = if(a2b) {
