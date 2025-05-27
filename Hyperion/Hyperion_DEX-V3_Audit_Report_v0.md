@@ -12,7 +12,7 @@
 
 ## Executive Summary
 
-OShield performed a thorough audit of the Hyperion DEX-V3 protocol, a decentralized exchange on the Aptos blockchain featuring a hybrid Orderbook-AMM model. The audit identified six vulnerabilities: one high-severity issue ([HYPERION-H1](#HYPERION-h1-price-limit-bypass-and-tick-desynchronization-in-swap-execution-in-pool_v3move): Price Limit Bypass and Tick Desynchronization in `pool_v3.move`, two medium-severity issues [HYPERION-M1](#HYPERION-m1-token-type-mismatch-in-pool-creation-in-router_v3move): Token Type Mismatch in `router_v3.move`), ([HYPERION-M2](#HYPERION-m2-seconds-outside-not-initialized-on-creation-in-tickmove): Seconds Outside Not Initialized in `tick.move`), and two informational issues ([HYPERION-I1](#HYPERION-i1-unnecessary-tick-rounding-in-pool-creation-in-pool_v3move), [I2](#HYPERION-i2-missing-emission-verification-in-tickmove). The high-severity issue, which could lead to recoverable financial harm and affect user intent, was swiftly addressed through collaboration with the Hyperion development team, reflecting their proactive security stance.
+OShield performed a thorough audit of the Hyperfluid DEX-V3 protocol, a decentralized exchange on the Aptos blockchain featuring a hybrid Orderbook-AMM model. The audit identified six vulnerabilities: one high-severity issue ([HYPERION-H1](#HYPERION-h1-price-limit-bypass-and-tick-desynchronization-in-swap-execution-in-pool_v3move): Price Limit Bypass and Tick Desynchronization in `pool_v3.move`, two medium-severity issues [HYPERION-M1](#HYPERION-m1-token-type-mismatch-in-pool-creation-in-router_v3move): Token Type Mismatch in `router_v3.move`), ([HYPERION-M2](#HYPERION-m2-seconds-outside-not-initialized-on-creation-in-tickmove): Seconds Outside Not Initialized in `tick.move`), and two informational issues ([HYPERION-I1](#HYPERION-i1-unnecessary-tick-rounding-in-pool-creation-in-pool_v3move), [I2](#HYPERION-i2-missing-emission-verification-in-tickmove). The high-severity issue, which could lead to recoverable financial harm and affect user intent, was swiftly addressed through collaboration with the Hyperion development team, reflecting their proactive security stance.
 
 The audit employed a robust methodology, including code review, mathematical verification, threat modeling, vulnerability testing, and architectural analysis, with a focus on economic risks and edge cases. Formal verification leveraged the Aptos Move prover, with custom scripts to resolve type c onversion challenges in the Move-to-Boogie transpilation process. Key proofs validated critical functionalities such as tick crossing, fee growth updates, liquidity management, and reward system operations, ensuring protocol reliability. OShield’s recommendations aim to bolster long-term security and resilience, solidifying Hyperion DEX-V3’s role as a dependable component in the Aptos ecosystem.
 
@@ -42,9 +42,9 @@ The audit employed a robust methodology, including code review, mathematical ver
 
 ## 1. Introduction
 
-This audit focuses on Hyperion, a fully on-chain hybrid Orderbook-AMM DEX built natively for Aptos. Hyperion (https://hyperion.xyz/) leverages Aptos's throughput and minimal latency for trading. The protocol implements an advanced automated market maker (AMM) system with concentrated liquidity positions, tick-based price ranges, and multiple fee tiers.
+This audit focuses on Hyperfluid, a fully on-chain hybrid Orderbook-AMM DEX built natively for Aptos. Hyperion (https://hyperion.xyz/) leverages Aptos's throughput and minimal latency for trading. The protocol implements an advanced automated market maker (AMM) system with concentrated liquidity positions, tick-based price ranges, and multiple fee tiers.
 
-This audit included a thorough review of the protocol's smart contract code with particular attention to economic vulnerabilities, mathematical accuracy, and security implications of token interactions. Hyperion is an important infrastructure component for the Aptos ecosystem, and ensuring their security and correctness is critical for both the protocol and its users.
+This audit included a thorough review of the protocol's smart contract code with particular attention to economic vulnerabilities, mathematical accuracy, and security implications of token interactions. Hyperfluid is an important infrastructure component for the Aptos ecosystem, and ensuring their security and correctness is critical for both the protocol and its users.
 
 ## 2. Findings & Recommendations
 Our severity classification system adheres to the criteria outlined here.
@@ -58,7 +58,9 @@ Our severity classification system adheres to the criteria outlined here.
 | ℹ️ Informational | N/A | Recommendations for improvement | Design enhancements, best practices |
 
 ### 2.1. Findings Summary
-
+<br>
+<br>
+<br>
 | Finding | Description | Severity Level |
 |---------|-------------|----------------|
 | [HYPERION-H1]| Price Limit Bypass and Tick Desynchronization in Swap Execution in `pool_v3.move` | 🟠 High |
