@@ -97,7 +97,6 @@ This finding is classified as High due to the following factors:
 - **Potential Price Limit Violations**: When swaps cross tick boundaries that exceed the specified price limit, execution may continue beyond the intended threshold.
 - **Slippage Protection Concerns**: The primary mechanism for controlling execution boundaries may not function as expected in certain market conditions.
 - **Execution Precision**: The lack of proper target price calculation can lead to less precise swap execution, particularly in volatile market conditions.
-- **Edge Case Scenarios**: While not affecting typical swap operations, this issue becomes relevant in scenarios where precise price limit enforcement is critical.
 
 ##### Implemented Solution
 
