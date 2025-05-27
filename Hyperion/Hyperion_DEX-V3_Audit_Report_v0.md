@@ -61,6 +61,7 @@ Our severity classification system adheres to the criteria outlined here.
 <br>
 <br>
 <br>
+
 | Finding | Description | Severity Level |
 |---------|-------------|----------------|
 | [HYPERION-H1]| Price Limit Bypass and Tick Desynchronization in Swap Execution in `pool_v3.move` | 🟠 High |
