@@ -75,15 +75,20 @@ Our severity classification system adheres to the criteria outlined here.
 
 In the [`pool_v3.move`](https://github.com/hyperionxyz/dex-v3/tree/main/sources/v3/pool_v3.move) module, there is an implementation issues that creates a systemic risk affecting trade execution precision, price reporting, and slippage protection. This finding is detailed code review, and affect every swap that uses price limits, placing user funds at risk.
 
-In the swap computation, the implementation fails to implement critical price limit validation logic. There should be logic in the code to determine the closest of the limit_price and the next_tick price up to which the swap will continue to execute. This is done as follows:
+In the swap computation, the implementation fails to implement critical price limit validation logic. There should be logic in the code to determine the closest of the limit_price and the next_tick price up to which the swap will continue to execute, similarly to Uniswap V3's standard behavior, where the code explicitly caps the target price at the user's limit when the next tick would cross it:
 
 ```move
-let target_price = if(a2b) {
-    math128::max(sqrt_price_next, sqrt_price_limit)
-} else {
-    math128::min(sqrt_price_next, sqrt_price_limit)
-};
+(state.sqrtPriceX96, step.amountIn, step.amountOut, step.feeAmount) = SwapMath.computeSwapStep(
+    state.sqrtPriceX96,
+    (zeroForOne ? step.sqrtPriceNextX96 < sqrtPriceLimitX96 : step.sqrtPriceNextX96 > sqrtPriceLimitX96)
+        ? sqrtPriceLimitX96  // Cap at limit if next tick would cross it
+        : step.sqrtPriceNextX96,
+    state.liquidity,
+    state.amountSpecifiedRemaining,
+    fee
+);
 ```
+
 The missing logic should determine the target price by comparing the next tick price with the user's specified limit:
 
 - **For token0 to token1 swaps (a2b = true)**: The target price should be the maximum of sqrt_price_next and sqrt_price_limit, ensuring the price does not drop below the limit
