@@ -198,7 +198,7 @@ The second parameter incorrectly uses `CoinType1` again, instead of using `CoinT
 2. Attempts to use this function will fail with a type error
 
 ##### Implemented Solution
-
+WAITING ON HYPERION TO SEND THE NEW COMMIT
 To address this vulnerability, the developers implemented a fix that ensures proper enforcement of the right token, setting the second parameter in the `create_pool` call to use `CoinType2` instead of repeating `CoinType1`:
 
 ```diff
