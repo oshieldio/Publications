@@ -94,14 +94,12 @@ The missing logic should determine the target price by comparing the next tick p
 - **For token0 to token1 swaps (a2b = true)**: The target price should be the maximum of sqrt_price_next and sqrt_price_limit, ensuring the price does not drop below the limit
 - **For token1 to token0 swaps (a2b = false)**: The target price should be the minimum of sqrt_price_next and sqrt_price_limit, ensuring the price does not rise above the limit
 
-The absence of this validation means price updates can violate the intended execution boundaries, potentially overshooting matching price and incomplete swap characteristics.
-
 ##### Impact
 
 This finding is classified as High due to the following factors:
 - **Potential Price Limit Violations**: When swaps cross tick boundaries that exceed the specified price limit, execution may continue beyond the intended threshold.
 - **Slippage Protection Concerns**: The primary mechanism for controlling execution boundaries may not function as expected in certain market conditions.
-- **Execution Precision**: The lack of proper target price calculation can lead to less precise swap execution, particularly in volatile market conditions.
+- **Undefined Swap Behaviour**: The lack of consistent target price calculation can cause swaps to respect the  `sqrt_price_limit` input only when it is exactly equal to the next tick's price and to ignore it otherwise, resulting in an undefined swap charachteresitcs.
 
 ##### Implemented Solution
 
