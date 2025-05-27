@@ -75,9 +75,9 @@ Our severity classification system adheres to the criteria outlined here.
 
 In the [`pool_v3.move`](https://github.com/hyperionxyz/dex-v3/tree/main/sources/v3/pool_v3.move) module, there is an implementation issues that creates a systemic risk affecting trade execution precision, price reporting, and slippage protection. This finding is detailed code review, and affect every swap that uses price limits, placing user funds at risk.
 
-In the swap computation, the implementation fails to implement critical price limit validation logic. There should be logic in the code to determine the closest of the limit_price and the next_tick price up to which the swap will continue to execute, similarly to Uniswap V3's standard behavior, where the code explicitly caps the target price at the user's limit when the next tick would cross it:
+In the swap computation, the implementation fails to implement price limit validation logic. There should be logic in the code to determine the closest of the limit_price and the next_tick price up to which the swap will continue to execute, similarly to Uniswap V3's standard behavior as follows:
 
-```move
+```solidity
 (state.sqrtPriceX96, step.amountIn, step.amountOut, step.feeAmount) = SwapMath.computeSwapStep(
     state.sqrtPriceX96,
     (zeroForOne ? step.sqrtPriceNextX96 < sqrtPriceLimitX96 : step.sqrtPriceNextX96 > sqrtPriceLimitX96)
@@ -94,7 +94,7 @@ The missing logic should determine the target price by comparing the next tick p
 - **For token0 to token1 swaps (a2b = true)**: The target price should be the maximum of sqrt_price_next and sqrt_price_limit, ensuring the price does not drop below the limit
 - **For token1 to token0 swaps (a2b = false)**: The target price should be the minimum of sqrt_price_next and sqrt_price_limit, ensuring the price does not rise above the limit
 
-This logic ensures that when the next tick boundary lies beyond the user's specified limit, the swap execution stops at the limit rather than overshooting it. The absence of this validation means price updates can violate the intended execution boundaries.
+The absence of this validation means price updates can violate the intended execution boundaries, potentially overshooting matching price and incomplete swap characteristics.
 
 ##### Impact
 
@@ -139,7 +139,7 @@ This change ensures that the target price is properly calculated by comparing th
 
 - [View File ](https://github.com/hyperionxyz/dex-v3/blob/3cb6854e54ee50eab707fb3cc8d8fe0e4e8e4008/sources/v3/pool_v3.move#L1921-L1936)
 - [View Commit ](https://github.com/hyperionxyz/dex-v3/commit/3cb6854e54ee50eab707fb3cc8d8fe0e4e8e4008#diff-4df44619a3e80d7da552eb8697dcc578837256cd3c46b1842a8213584601ca28R1921)
-
+ 
 #### HYPERION-M1: Token Type Mismatch in Pool Creation in `router_v3.move`
 
 ##### Description
