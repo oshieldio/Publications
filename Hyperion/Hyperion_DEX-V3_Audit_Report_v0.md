@@ -12,7 +12,7 @@
 
 ## Executive Summary
 
-OShield performed a thorough audit of the Hyperion DEX-V3 protocol, a decentralized exchange on the Aptos blockchain featuring a hybrid Orderbook-AMM model. The audit identified six vulnerabilities: one high-severity issue ([HYPERION-H1](#HYPERION-h1-price-limit-bypass-and-tick-desynchronization-in-swap-execution-in-pool_v3move): Price Limit Bypass and Tick Desynchronization in `pool_v3.move`, two medium-severity issues [HYPERION-M1](#HYPERION-m1-token-type-mismatch-in-pool-creation-in-router_v3move): Token Type Mismatch in `router_v3.move`),and ([HYPERION-M2](#HYPERION-M2-seconds-outside-not-initialized-on-creation-in-tickmove): Seconds Outside Not Initialized in `tick.move`), and two informational issues ([HYPERION-I1](#HYPERION-i1-unnecessary-tick-rounding-in-pool-creation-in-pool_v3move), [I2](#HYPERION-i2-missing-emission-verification-in-tickmove). The high-severity issue, which could lead to recoverable financial harm and affect user intent, was swiftly addressed through collaboration with the Hyperion development team, reflecting their proactive security stance.
+OShield performed a thorough audit of the Hyperion DEX-V3 protocol, a decentralized exchange on the Aptos blockchain featuring a hybrid Orderbook-AMM model. The audit identified six vulnerabilities: two high-severity issues ([HYPERION-H1](#HYPERION-h1-price-limit-bypass-and-tick-desynchronization-in-swap-execution-in-pool_v3move): Price Limit Bypass and Tick Desynchronization in `pool_v3.move`, and [HYPERION-H2](#HYPERION-h2-token-type-mismatch-in-pool-creation-in-router_v3move): Token Type Mismatch in `router_v3.move`), one medium-severity issue ([HYPERION-M1](#HYPERION-m1-seconds-outside-not-initialized-on-creation-in-tickmove): Seconds Outside Not Initialized in `tick.move`), and two informational issues ([HYPERION-I1](#HYPERION-i1-unnecessary-tick-rounding-in-pool-creation-in-pool_v3move), [I2](#HYPERION-i2-missing-emission-verification-in-tickmove). The high-severity issues, which could lead to recoverable financial harm and affect user intent, were swiftly addressed through collaboration with the Hyperion development team, reflecting their proactive security stance.
 
 The audit employed a robust methodology, including code review, mathematical verification, threat modeling, vulnerability testing, and architectural analysis, with a focus on economic risks and edge cases. Formal verification leveraged the Aptos Move prover, with custom scripts to resolve type conversion challenges in the Move-to-Boogie transpilation process. Key proofs validated critical functionalities such as tick crossing, fee growth updates, liquidity management, and reward system operations, ensuring protocol reliability. OShield’s recommendations aim to bolster long-term security and resilience, solidifying Hyperion DEX-V3’s role as a dependable component in the Aptos ecosystem.
 
@@ -24,8 +24,8 @@ The audit employed a robust methodology, including code review, mathematical ver
 		- [2.1. Findings Summary](#21-findings-summary)
 		- [2.2. Findings Description](#22-findings-description)
 			- [HYPERION-H1: Price Limit Bypass and Tick Desynchronization in Swap Execution in `pool_v3.move`](#HYPERION-h1-price-limit-bypass-and-tick-desynchronization-in-swap-execution-in-pool_v3move)
-			- [HYPERION-M1: Token Type Mismatch in Pool Creation in `router_v3.move`](#HYPERION-m1-token-type-mismatch-in-pool-creation-in-router_v3move)
-			- [HYPERION-M2: Seconds Outside Not Initialized on Creation in `tick.move`](#HYPERION-m2-seconds-outside-not-initialized-on-creation-in-tickmove)
+			- [HYPERION-H2: Token Type Mismatch in Pool Creation in `router_v3.move`](#HYPERION-h1-token-type-mismatch-in-pool-creation-in-router_v3move)
+			- [HYPERION-M1: Seconds Outside Not Initialized on Creation in `tick.move`](#HYPERION-m1-seconds-outside-not-initialized-on-creation-in-tickmove)
 			- [HYPERION-I1: Unnecessary Tick Rounding in Pool Creation in `pool_v3.move`](#HYPERION-i1-unnecessary-tick-rounding-in-pool-creation-in-pool_v3move)
 			- [HYPERION-I2: Missing Emission Verification in `tick.move`](#HYPERION-i2-missing-emission-verification-in-tickmove)
 	- [3. Protocol Overview](#3-protocol-overview)
@@ -62,8 +62,8 @@ Our severity classification system adheres to the criteria outlined here.
 | Finding | Description | Severity Level |
 |---------|-------------|----------------|
 | [HYPERION-H1]| Price Limit Bypass and Tick Desynchronization in Swap Execution in `pool_v3.move` | 🟠 High |
-| [HYPERION-M1]| Token Type Mismatch in Pool Creation in `router_v3.move` | 🟡 Medium |
-| [HYPERION-M2]| Seconds Outside Not Initialized on Creation in `tick.move` | 🟡 Medium |
+| [HYPERION-H2]| Token Type Mismatch in Pool Creation in `router_v3.move` | 🟠 High |
+| [HYPERION-M1]| Seconds Outside Not Initialized on Creation in `tick.move` | 🟡 Medium |
 | [HYPERION-I1]| Unnecessary Tick Rounding in Pool Creation in `pool_v3.move` | ℹ️ Informational |
 | [HYPERION-I2]| Missing Emission Verification in `tick.move` | ℹ️ Informational |
 
@@ -73,9 +73,9 @@ Our severity classification system adheres to the criteria outlined here.
 
 ##### Description
 
-In the [`pool_v3.move`](https://github.com/hyperionxyz/dex-v3/tree/main/sources/v3/pool_v3.move) module,  there is a critical implementation issues that creates a systemic risk affecting trade execution precision, price reporting, and slippage protection. This finding is supported by data analysis of transaction patterns and detailed code review, and affect every swap that uses price limits, placing user funds at risk.
+In the [`pool_v3.move`](https://github.com/hyperionxyz/dex-v3/tree/main/sources/v3/pool_v3.move) module, there are two critical implementation issues that, when combined, create a systemic risk affecting trade execution precision, price reporting, and slippage protection. These findings are supported by data analysis of transaction patterns and detailed code review, and affect every swap that uses price limits, placing user funds at risk.
 
-The issue relates to incorrect price limit enforcement in the `swap` function:
+The first issue relates to incorrect price limit enforcement in the `swap` function:
 
 ```move
 while(state.amount_specified_remaining != 0 && state.sqrt_price != sqrt_price_limit) {
@@ -92,7 +92,54 @@ This implementation fails to enforce price limits correctly due to three fundame
    - For token1 to token0 swaps (`a2b = false`), the price must stop *before* rising to or above the limit
    - The current implementation violates these requirements by allowing prices to reach or cross the limit
 
+3. **Potential Limit Overshooting and Non-Compliance with Uniswap V3**: In the swap computation, the implementation fails to implement a critical price limit safeguard that is standard in Uniswap V3. Specifically, `swap_math::compute_swap_step` passes arbitrary next prices without validating against the user's limit:
+
+```move
+// At line 1634
+let (amount_in, amount_out, next_sqrt_price, fee_amount) =
+    swap_math::compute_swap_step(
+        state.sqrt_price,
+        sqrt_price_next,  // Next tick price without limit validation
+        state.liquidity,
+        state.amount_specified_remaining,
+        pool_mut.fee_rate,
+        a2b,
+        by_amount_in
+    );
+```
+
+This implementation deviates from Uniswap V3's standard behavior, where the code explicitly caps the target price at the user's limit when the next tick would cross it:
+
+```solidity
+// Uniswap V3 implementation in UniswapV3Pool.sol
+(state.sqrtPriceX96, step.amountIn, step.amountOut, step.feeAmount) = SwapMath.computeSwapStep(
+    state.sqrtPriceX96,
+    (zeroForOne ? step.sqrtPriceNextX96 < sqrtPriceLimitX96 : step.sqrtPriceNextX96 > sqrtPriceLimitX96)
+        ? sqrtPriceLimitX96  // Cap at limit if next tick would cross it
+        : step.sqrtPriceNextX96,
+    state.liquidity,
+    state.amountSpecifiedRemaining,
+    fee
+);
+```
+
 This omission in Hyperion allows the price to overshoot the user's limit in a single step when the next tick boundary lies beyond the limit. The lack of this standard safeguard means price updates can violate user intent without detection.
+
+The second issue creates a tick/price inconsistency during tick crossings:
+
+```move
+if(a2b) {
+    state.tick = i32::sub(tick_next, i32::from_u32(1));
+    // Missing: state.sqrt_price = tick_math::get_sqrt_price_at_tick(state.tick);
+} else {
+    state.tick = tick_next;
+}
+```
+
+This creates a persistent misalignment between reported ticks and actual prices because:
+1. In token0 to token1 swaps, the tick index is decremented by 1 (correct behavior)
+2. However, the corresponding `sqrt_price` is not updated to match the new tick value
+3. This inconsistency accumulates across multiple tick crossings in a single swap
 
 ##### Impact
 
@@ -117,40 +164,10 @@ To address this vulnerability, the developers implemented a fix that ensures pro
 For token0 to token1 swaps (a2b = true), the `target_price` is set to the maximum of `sqrt_price_next` and `sqrt_price_limit`, ensuring the price does not drop below the limit.
 For token1 to token0 swaps (a2b = false), the `target_price` is set to the minimum of `sqrt_price_next` and `sqrt_price_limit`, ensuring the price does not rise above the limit.
 This change aligns the implementation with Uniswap V3's standard behavior, where the target price is capped at the user's limit to prevent overshooting. 
-```move
-module dex_contract::pool_v3 {
-    use std::signer;
-    use std::vector;
-  + use aptos_std::math128;
-    use std::string::{String};
-    use aptos_std::timestamp;
-    use aptos_std::comparator;
-            [...]    
-		tick_next = tick_math::max_tick();
-            };
-            let sqrt_price_next = tick_math::get_sqrt_price_at_tick(tick_next);
-  +          let target_price = if(a2b) {
-  +              math128::max(sqrt_price_next, sqrt_price_limit)
-  +          } else {
-  +              math128::min(sqrt_price_next, sqrt_price_limit)
-  +          };
-
-            let (amount_in, amount_out, next_sqrt_price, fee_amount) =
-                swap_math::compute_swap_step(
-                    state.sqrt_price,
-REMOVED             sqrt_price_next,
-  +                  target_price,
-                    state.liquidity,
-                    state.amount_specified_remaining,
-                    pool_mut.fee_rate,
-
-```
-
-
 - [View File ](https://github.com/hyperionxyz/dex-v3/blob/3cb6854e54ee50eab707fb3cc8d8fe0e4e8e4008/sources/v3/pool_v3.move#L1921-L1936)
 - [View Commit ](https://github.com/hyperionxyz/dex-v3/commit/3cb6854e54ee50eab707fb3cc8d8fe0e4e8e4008#diff-4df44619a3e80d7da552eb8697dcc578837256cd3c46b1842a8213584601ca28R1921)
 
-#### HYPERION-M1: Token Type Mismatch in Pool Creation in `router_v3.move`
+#### HYPERION-H2: Token Type Mismatch in Pool Creation in `router_v3.move`
 
 ##### Description
 
@@ -181,7 +198,7 @@ The second parameter incorrectly uses `CoinType1` again, instead of using `CoinT
 2. Attempts to use this function will fail with a type error
 
 ##### Implemented Solution
-WAITING ON HYPERION TO SEND THE NEW COMMIT
+
 To address this vulnerability, the developers implemented a fix that ensures proper enforcement of the right token, setting the second parameter in the `create_pool` call to use `CoinType2` instead of repeating `CoinType1`:
 
 ```diff
@@ -203,7 +220,7 @@ public entry fun create_pool_both_coins<CoinType1, CoinType2>(
 - [View Commit ](https://github.com/hyperionxyz/dex-v3/commit/a2301eb1a8833b4f72600cf12b61ef2c7dc1e69a)
 
 
-#### HYPERION-M2: Seconds Outside Not Initialized on Creation in `tick.move`
+#### HYPERION-M1: Seconds Outside Not Initialized on Creation in `tick.move`
 
 ##### Description
 
@@ -350,348 +367,346 @@ Key components include:
 - **Rewarder**: Distributes incentives to liquidity providers
 
 ### 3.1 Program Charts
-
 #### DEX-V3 Structure
 
+This diagram represents the core architecture of the DEX-V3 protocol. Components are organized by functionality with relationships showing dependencies. 
+<br>The structure illustrates how liquidity pools, positions, and router interact.
+<br>
+<br>
 ```mermaid
 classDiagram
 direction TB
     class LiquidityPoolConfigsV3 {
-	    +all_pools: SmartVector~Object~LiquidityPoolV3~~
-	    +is_paused: bool
-	    +fee_manager: address
-	    +pauser: address
-	    +pending_fee_manager: address
-	    +pending_pauser: address
-	    +tick_spacing_list: vector~u64~
+        +all_pools: SmartVector[Object[LiquidityPoolV3]]
+        +is_paused: bool
+        +fee_manager: address
+        +pauser: address
+        +pending_fee_manager: address
+        +pending_pauser: address
+        +tick_spacing_list: vector[u64]
     }
 
     class LiquidityPoolV3 {
-	    +token_a_liquidity: Object~FungibleStore~
-	    +token_b_liquidity: Object~FungibleStore~
-	    +token_a_fee: Object~FungibleStore~
-	    +token_b_fee: Object~FungibleStore~
-	    +sqrt_price: u128
-	    +liquidity: u128
-	    +tick: I32
-	    +observation_index: u64
-	    +observation_cardinality: u64
-	    +observation_cardinality_next: u64
-	    +fee_rate: u64
-	    +fee_protocol: u64
-	    +unlocked: bool
-	    +fee_growth_global_a: u128
-	    +fee_growth_global_b: u128
-	    +seconds_per_liquidity_oracle: u128
-	    +seconds_per_liquidity_incentive: u128
-	    +position_blacklist: PositionBlackList
-	    +last_update_timestamp: u64
-	    +tick_info: SmartTable~I32, TickInfo~
-	    +tick_map: BitMap
-	    +tick_spacing: u32
-	    +protocol_fees: ProtocolFees
-	    +lp_token_refs: LPTokenRefs
-	    +max_liquidity_per_tick: u128
-	    +rewarder_manager: RewarderManager
+        +token_a_liquidity: Object[FungibleStore]
+        +token_b_liquidity: Object[FungibleStore]
+        +token_a_fee: Object[FungibleStore]
+        +token_b_fee: Object[FungibleStore]
+        +sqrt_price: u128
+        +liquidity: u128
+        +tick: I32
+        +observation_index: u64
+        +observation_cardinality: u64
+        +observation_cardinality_next: u64
+        +fee_rate: u64
+        +fee_protocol: u64
+        +unlocked: bool
+        +fee_growth_global_a: u128
+        +fee_growth_global_b: u128
+        +seconds_per_liquidity_oracle: u128
+        +seconds_per_liquidity_incentive: u128
+        +position_blacklist: PositionBlackList
+        +last_update_timestamp: u64
+        +tick_info: SmartTable[I32, TickInfo]
+        +tick_map: BitMap
+        +tick_spacing: u32
+        +protocol_fees: ProtocolFees
+        +lp_token_refs: LPTokenRefs
+        +max_liquidity_per_tick: u128
+        +rewarder_manager: RewarderManager
     }
 
     class TickInfo {
-	    +liquidity_gross: u128
-	    +liquidity_net: I128
-	    +fee_growth_outside_a: u128
-	    +fee_growth_outside_b: u128
-	    +tick_cumulative_outside: u64
-	    +seconds_per_liquidity_oracle_outside: u128
-	    +seconds_per_liquidity_incentive_outside: u128
-	    +emissions_per_liquidity_incentive_outside: vector~u128~
-	    +seconds_outside: u64
-	    +initialized: bool
+        +liquidity_gross: u128
+        +liquidity_net: I128
+        +fee_growth_outside_a: u128
+        +fee_growth_outside_b: u128
+        +tick_cumulative_outside: u64
+        +seconds_per_liquidity_oracle_outside: u128
+        +seconds_per_liquidity_incentive_outside: u128
+        +emissions_per_liquidity_incentive_outside: vector[u128]
+        +seconds_outside: u64
+        +initialized: bool
     }
 
     class BitMap {
-	    +map: Table~I32, u256~
-	    ---
-	    +new()
-	    +flip_tick(tick: I32, tick_spacing: u32)
-	    +next_initialized_tick_within_one_word(tick: I32, tick_spacing: u32, a2b: bool):(I32, bool)
+        +map: Table[I32, u256]
+        +new()
+        +flip_tick(tick: I32, tick_spacing: u32)
+        +next_initialized_tick_within_one_word(tick: I32, tick_spacing: u32, a2b: bool) (I32, bool)
     }
 
-    class Table~I32, u256~ {
-	    Stores sparse mapping of word positions to bitmap values
+    class Table_I32_u256 {
+        Stores sparse mapping of word positions to bitmap values
     }
 
     class Info {
-	    +initialized: bool
-	    +liquidity: u128
-	    +tick_lower: I32
-	    +tick_upper: I32
-	    +fee_growth_inside_a_last: u128
-	    +fee_growth_inside_b_last: u128
-	    +fee_owed_a: u64
-	    +fee_owed_b: u64
-	    +token_a: Object~Metadata~
-	    +token_b: Object~Metadata~
-	    +fee_tier: u8
-	    +rewards: vector~PositionReward~
+        +initialized: bool
+        +liquidity: u128
+        +tick_lower: I32
+        +tick_upper: I32
+        +fee_growth_inside_a_last: u128
+        +fee_growth_inside_b_last: u128
+        +fee_owed_a: u64
+        +fee_owed_b: u64
+        +token_a: Object[Metadata]
+        +token_b: Object[Metadata]
+        +fee_tier: u8
+        +rewards: vector[PositionReward]
     }
 
     class RewarderManager {
-	    +rewarders: vector~Rewarder~
-	    +last_updated_time: u64
-	    +pause: bool
-	    ---
-	    +init() : RewarderManager
-	    +flash(pool_liquidity: u128)
-	    +add_rewarder(emissions_per_second: u64, reward_fa: FungibleAsset)
-	    +add_incentive(fa_reward: FungibleAsset, index: u64)
-	    +remove_incentive(index: u64, amount: u64) : FungibleAsset
-	    +update_emissions_rate(index: u64, emissions_per_second: u64)
-	    +set_pause(pause: bool)
+        +rewarders: vector[Rewarder]
+        +last_updated_time: u64
+        +pause: bool
+        +init() RewarderManager
+        +flash(pool_liquidity: u128)
+        +add_rewarder(emissions_per_second: u64, reward_fa: FungibleAsset)
+        +add_incentive(fa_reward: FungibleAsset, index: u64)
+        +remove_incentive(index: u64, amount: u64) FungibleAsset
+        +update_emissions_rate(index: u64, emissions_per_second: u64)
+        +set_pause(pause: bool)
     }
 
     class Rewarder {
-	    +reward_store: Object~FungibleStore~
-	    +emissions_per_second: u64
-	    +emissions_per_second_max: u64
-	    +emissions_per_liquidity_start: u128
-	    +emissions_per_liquidity_latest: u128
-	    +user_owed: u64
-	    +pause: bool
+        +reward_store: Object[FungibleStore]
+        +emissions_per_second: u64
+        +emissions_per_second_max: u64
+        +emissions_per_liquidity_start: u128
+        +emissions_per_liquidity_latest: u128
+        +user_owed: u64
+        +pause: bool
     }
 
     class PositionReward {
-	    +emissions_per_liquidity_inside: u128
-	    +amount_owned: u64
+        +emissions_per_liquidity_inside: u128
+        +amount_owned: u64
     }
 
     class RewardEvents {
-	    +CreateRewarderEvent
-	    +AddIncentiveEvent
-	    +RemoveIncentiveEvent
-	    +ClaimRewardsEvent
-	    +RewardEmissionMaxUpdateEvent
-	    +RewardEmissionUpdateEvent
-	    +RewarderOwedUpdate
+        +CreateRewarderEvent
+        +AddIncentiveEvent
+        +RemoveIncentiveEvent
+        +ClaimRewardsEvent
+        +RewardEmissionMaxUpdateEvent
+        +RewardEmissionUpdateEvent
+        +RewarderOwedUpdate
     }
 
     class ProtocolFees {
-	    +token_a: Object~FungibleStore~
-	    +token_b: Object~FungibleStore~
+        +token_a: Object[FungibleStore]
+        +token_b: Object[FungibleStore]
     }
 
     class LPTokenRefs {
-	    +burn_ref: BurnRef
-	    +mint_ref: MintRef
-	    +transfer_ref: TransferRef
-	    +extend_ref: ExtendRef
+        +burn_ref: BurnRef
+        +mint_ref: MintRef
+        +transfer_ref: TransferRef
+        +extend_ref: ExtendRef
     }
 
     class PositionBlackList {
-	    +addresses: SmartVector~address~
-	    ---
-	    +new() : PositionBlackList
-	    +blocked_out_liquidity_amount(current_tick: I32) : u128
-	    +add(position_id: Object~position_v3::Info~)
-	    +remove(position_id: Object~position_v3::Info~)
-	    +does_blocked(position_id: Object~position_v3::Info~) : bool
-	    +view_list() : vector~address~
+        +addresses: SmartVector[address]
+        +new() PositionBlackList
+        +blocked_out_liquidity_amount(current_tick: I32) u128
+        +add(position_id: Object[position_v3::Info])
+        +remove(position_id: Object[position_v3::Info])
+        +does_blocked(position_id: Object[position_v3::Info]) bool
+        +view_list() vector[address]
     }
 
-    class SmartVector~address~ {
-	    Collection of blacklisted position addresses
+    class SmartVector_address {
+        Collection of blacklisted position addresses
     }
 
     class Position_Info {
-	    Position information from position_v3 module
+        Position information from position_v3 module
     }
 
     class SwapState {
-	    +amount_specified_remaining: u64
-	    +amount_calculated: u64
-	    +sqrt_price: u128
-	    +tick: I32
-	    +fee_growth_global: u128
-	    +seconds_per_liquidity: u128
-	    +protocol_fee: u64
-	    +liquidity: u128
-	    +fee_amount_total: u64
+        +amount_specified_remaining: u64
+        +amount_calculated: u64
+        +sqrt_price: u128
+        +tick: I32
+        +fee_growth_global: u128
+        +seconds_per_liquidity: u128
+        +protocol_fee: u64
+        +liquidity: u128
+        +fee_amount_total: u64
     }
 
     class router_v3 {
-	    +create_pool()
-	    +create_pool_coin()
-	    +create_pool_both_coins()
-	    +create_liquidity()
-	    +create_liquidity_coin()
-	    +create_liquidity_both_coins()
-	    +open_position()
-	    +open_position_coin()
-	    +open_position_both_coins()
-	    +add_liquidity()
-	    +add_liquidity_coin()
-	    +add_liquidity_both_coins()
-	    +remove_liquidity()
-	    +remove_liquidity_coin()
-	    +remove_liquidity_both_coins()
-	    +claim_fees_and_rewards()
-	    +claim_fees()
-	    +apt_transfer_to_coin()
-	    +exact_input_swap_entry()
-	    +exact_input_coin_for_asset_entry()
-	    +exact_input_asset_for_coin_entry()
-	    +exact_input_coin_for_coin_entry()
-	    +exact_output_swap_entry()
-	    +exact_output_coin_for_asset_entry()
-	    +exact_output_asset_for_coin_entry()
-	    +exact_output_coin_for_coin_entry()
-	    +swap_batch_coin_entry()
-	    +swap_batch()
-	    +add_coin_rewarder()
-	    +add_rewarder()
-	    +add_coin_incentive()
-	    +add_incentive()
-	    +remove_incentive()
-	    +update_emissions_rate()
-	    +claim_rewards()
-	    +get_amount_by_liquidity()
-	    +optimal_liquidity_amounts()
-	    +optimal_liquidity_amounts_from_a()
-	    +optimal_liquidity_amounts_from_b()
-	    +get_batch_amount_out()
-	    +get_batch_amount_in()
+        +create_pool()
+        +create_pool_coin()
+        +create_pool_both_coins()
+        +create_liquidity()
+        +create_liquidity_coin()
+        +create_liquidity_both_coins()
+        +open_position()
+        +open_position_coin()
+        +open_position_both_coins()
+        +add_liquidity()
+        +add_liquidity_coin()
+        +add_liquidity_both_coins()
+        +remove_liquidity()
+        +remove_liquidity_coin()
+        +remove_liquidity_both_coins()
+        +claim_fees_and_rewards()
+        +claim_fees()
+        +apt_transfer_to_coin()
+        +exact_input_swap_entry()
+        +exact_input_coin_for_asset_entry()
+        +exact_input_asset_for_coin_entry()
+        +exact_input_coin_for_coin_entry()
+        +exact_output_swap_entry()
+        +exact_output_coin_for_asset_entry()
+        +exact_output_asset_for_coin_entry()
+        +exact_output_coin_for_coin_entry()
+        +swap_batch_coin_entry()
+        +swap_batch()
+        +add_coin_rewarder()
+        +add_rewarder()
+        +add_coin_incentive()
+        +add_incentive()
+        +remove_incentive()
+        +update_emissions_rate()
+        +claim_rewards()
+        +get_amount_by_liquidity()
+        +optimal_liquidity_amounts()
+        +optimal_liquidity_amounts_from_a()
+        +optimal_liquidity_amounts_from_b()
+        +get_batch_amount_out()
+        +get_batch_amount_in()
     }
 
     class pool_v3 {
-	    +init_module()
-	    +initialize()
-	    +pool_reserve_amount()
-	    +pool_rewarder_list()
-	    +liquidity_pool_exists()
-	    +liquidity_pool()
-	    +liquidity_pool_address_safe()
-	    +liquidity_pool_address()
-	    +is_initialized()
-	    +current_tick_and_price()
-	    +current_price()
-	    +current_tick()
-	    +check_protocol_pause()
-	    +create_pool()
-	    +create_token_store()
-	    +open_position()
-	    +add_liquidity()
-	    +claim_fees()
-	    +claim_rewards_after_destory_position()
-	    +claim_fees_after_destory_position()
-	    +remove_liquidity()
-	    +update_reward_amount()
-	    +deposit_liquidity_token()
-	    +update_net_only()
-	    +update_reward_amount()
-	    +update_pool_liquidity()
-	    +update_rewarder_owed()
-	    +update_net_only()
-	    +update_remove_liquidity_amount()
-	    +add_rewarder()
-	    +get_incentive_liquidity()
-	    +add_rewarder_coin()
-	    +claim_protocol_fees_all()
-	    +block_position()
-	    +block_position_batch()
-	    +remove_position_block()
-	    +add_incentive()
-	    +get_current_emissions_per_liquidity_global()
-	    +add_coin_incentive()
-	    +remove_incentive()
-	    +pause_rewarder_manager()
-	    +restart_rewarder_manager()
-	    +remove_incentive_to_pause()
-	    +pause_protocol()
-	    +start_protocol()
-	    +update_protocol_fee_rate()
-	    +update_emissions_rate_max()
-	    +update_emissions_rate()
-	    +deposit_rewards()
-	    +claim_rewards()
-	    +flash_tick_emissions_per_liquidity()
-	    +refresh_position_rewards()
-	    +merge_into_pool()
-	    +dividen_from_pool()
-	    +swap()
-	    +flash_seconds_per_liquidity()
-	    +current_seconds_per_liquidity_oracle()
-	    +current_seconds_per_liquidity_incentive()
-	    +emit_pool_snapshot()
-	    +unchecked_mut_liquidity_pool_configs()
-	    +unchecked_liquidity_pool_configs()
-	    +get_pool()
-	    +get_pool_mut()
-	    +get_pool_by_address()
-	    +get_pool_mut_by_address()
-	    +get_tick()
-	    +get_tick_mut()
-	    +clear_tick()
-	    +update_net()
-	    +update_tick_net_and_gross()
-	    +update_tick()
+        +init_module()
+        +initialize()
+        +pool_reserve_amount()
+        +pool_rewarder_list()
+        +liquidity_pool_exists()
+        +liquidity_pool()
+        +liquidity_pool_address_safe()
+        +liquidity_pool_address()
+        +is_initialized()
+        +current_tick_and_price()
+        +current_price()
+        +current_tick()
+        +check_protocol_pause()
+        +create_pool()
+        +create_token_store()
+        +open_position()
+        +add_liquidity()
+        +claim_fees()
+        +claim_rewards_after_destroy_position()
+        +claim_fees_after_destroy_position()
+        +remove_liquidity()
+        +update_reward_amount()
+        +deposit_liquidity_token()
+        +update_net_only()
+        +update_pool_liquidity()
+        +update_rewarder_owed()
+        +update_remove_liquidity_amount()
+        +add_rewarder()
+        +get_incentive_liquidity()
+        +add_rewarder_coin()
+        +claim_protocol_fees_all()
+        +block_position()
+        +block_position_batch()
+        +remove_position_block()
+        +add_incentive()
+        +get_current_emissions_per_liquidity_global()
+        +add_coin_incentive()
+        +remove_incentive()
+        +pause_rewarder_manager()
+        +restart_rewarder_manager()
+        +remove_incentive_to_pause()
+        +pause_protocol()
+        +start_protocol()
+        +update_protocol_fee_rate()
+        +update_emissions_rate_max()
+        +update_emissions_rate()
+        +deposit_rewards()
+        +claim_rewards()
+        +flash_tick_emissions_per_liquidity()
+        +refresh_position_rewards()
+        +merge_into_pool()
+        +dividen_from_pool()
+        +swap()
+        +flash_seconds_per_liquidity()
+        +current_seconds_per_liquidity_oracle()
+        +current_seconds_per_liquidity_incentive()
+        +emit_pool_snapshot()
+        +unchecked_mut_liquidity_pool_configs()
+        +unchecked_liquidity_pool_configs()
+        +get_pool()
+        +get_pool_mut()
+        +get_pool_by_address()
+        +get_pool_mut_by_address()
+        +get_tick()
+        +get_tick_mut()
+        +clear_tick()
+        +update_net()
+        +update_tick_net_and_gross()
+        +update_tick()
     }
 
     class position_v3 {
-	    +open_position()
-	    +delete_empty_position()
-	    +add_liquidity()
-	    +remove_liquidity()
-	    +claim_fees()
-	    +calc_fees()
-	    +get_tick()
-	    +get_liquidity()
-	    +get_pool_info()
-	    +get_position_rewards()
-	    +copy_position_rewards()
-	    +update_rewards()
+        +open_position()
+        +delete_empty_position()
+        +add_liquidity()
+        +remove_liquidity()
+        +claim_fees()
+        +calc_fees()
+        +get_tick()
+        +get_liquidity()
+        +get_pool_info()
+        +get_position_rewards()
+        +copy_position_rewards()
+        +update_rewards()
     }
 
     class coin_wrapper {
-	    +is_supported()
-	    +is_wrapper()
-	    +get_coin_type()
-	    +get_wrapper()
-	    +get_original()
-	    +format_fungible_asset()
-	    +wrap()
-	    +unwrap()
-	    +fungible_asset_data()
+        +is_supported()
+        +is_wrapper()
+        +get_coin_type()
+        +get_wrapper()
+        +get_original()
+        +format_fungible_asset()
+        +wrap()
+        +unwrap()
+        +fungible_asset_data()
     }
 
     class admin_update {
-	    +set_protocol_fee()
-	    +set_price()
-	    +remove_liquidity()
-	    +claim_protocol_fee()
+        +set_protocol_fee()
+        +set_price()
+        +remove_liquidity()
+        +claim_protocol_fee()
     }
 
     class package_manager {
-	    +init()
-	    +get_signer()
-	    +is_admin()
+        +init()
+        +get_signer()
+        +is_admin()
     }
 
     class utils {
-	    +sort_tokens()
-	    +calculate_fee_amount()
-	    +convert_to_asset_amount()
+        +sort_tokens()
+        +calculate_fee_amount()
+        +convert_to_asset_amount()
     }
 
     class lp {
-	    +create_lp_token()
-	    +mint()
-	    +burn()
+        +create_lp_token()
+        +mint()
+        +burn()
     }
 
-    BitMap *-- "1" Table : contains
+    BitMap *-- "1" Table_I32_u256 : contains
     RewarderManager "1" *-- "*" Rewarder : contains
-    RewarderManager -- RewardEvents : emits
+    RewarderManager --> RewardEvents : emits
     Rewarder ..> PositionReward : calculates
-    PositionBlackList *-- "1" SmartVector : contains
+    PositionBlackList *-- "1" SmartVector_address : contains
     PositionBlackList ..> Position_Info : references
     LiquidityPoolConfigsV3 *-- "*" LiquidityPoolV3 : tracks all pools
     LiquidityPoolV3 *-- TickInfo : stores ticks in SmartTable
@@ -704,7 +719,6 @@ direction TB
     Info --> TickInfo : references lower tick
     Info --> TickInfo : references upper tick
     Info *-- "*" PositionReward : contains rewards
-    RewarderManager *-- "*" Rewarder : contains multiple rewarders
     SwapState --> LiquidityPoolV3 : temporary state during swaps
     SwapState --> TickInfo : interacts with during crossing
     pool_v3 --> LiquidityPoolV3 : implements pool logic
@@ -719,9 +733,10 @@ direction TB
     package_manager --> LiquidityPoolV3 : manages configurations
 ```
 
-This diagram represents the core architecture of the DEX-V3 protocol. Components are organized by functionality with relationships showing dependencies. The structure illustrates how liquidity pools, positions, and router interact.
 
 #### Swap Execution
+
+The sequence diagram below illustrates the complete swap execution flow, showing interactions between the user, router, pool, and token contracts. The diagram captures the key steps from swap initiation through price calculation, tick crossing, fee accrual, and token transfers.
 
 ```mermaid
 sequenceDiagram
@@ -763,9 +778,6 @@ sequenceDiagram
     
     Note over Pool,Ticks: During swap execution:<br/>1. Fees are accumulated<br/>2. Tick crossings update liquidity<br/>3. Price is updated
 ```
-
-The sequence diagram below illustrates the complete swap execution flow, showing interactions between the user, router, pool, and token contracts. The diagram captures the key steps from swap initiation through price calculation, tick crossing, fee accrual, and token transfers.
-
 
 ## 4. Methodology
 
@@ -1430,5 +1442,4 @@ The primary objectives of the audit are defined as:
 | Repository URL | https://github.com/hyperionxyz/dex-v3 |
 | Commit (start of audit) | a38458c536703115d5c9ad8a6202b6bc53481680 |
 | Commit (end of audit) | 3cb6854e54ee50eab707fb3cc8d8fe0e4e8e4008 (Oshield Branch)|
-
 
