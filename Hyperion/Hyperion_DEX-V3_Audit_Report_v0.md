@@ -12,9 +12,9 @@
 
 ## Executive Summary
 
-OShield performed a thorough audit of the Hyperion DEX-V3 protocol, a decentralized exchange on the Aptos blockchain featuring a hybrid Orderbook-AMM model. The audit identified six vulnerabilities: two high-severity issues ([HYPERION-H1](#HYPERION-h1-price-limit-bypass-and-tick-desynchronization-in-swap-execution-in-pool_v3move): Price Limit Bypass and Tick Desynchronization in `pool_v3.move`, and [HYPERION-H2](#HYPERION-h2-token-type-mismatch-in-pool-creation-in-router_v3move): Token Type Mismatch in `router_v3.move`), one medium-severity issue ([HYPERION-M1](#HYPERION-m1-seconds-outside-not-initialized-on-creation-in-tickmove): Seconds Outside Not Initialized in `tick.move`), and two informational issues ([HYPERION-I1](#HYPERION-i1-unnecessary-tick-rounding-in-pool-creation-in-pool_v3move), [I2](#HYPERION-i2-missing-emission-verification-in-tickmove). The high-severity issues, which could lead to recoverable financial harm and affect user intent, were swiftly addressed through collaboration with the Hyperion development team, reflecting their proactive security stance.
+OShield performed a thorough audit of the Hyperion DEX-V3 protocol, a decentralized exchange on the Aptos blockchain featuring a hybrid Orderbook-AMM model. The audit identified six vulnerabilities: one high-severity issue ([HYPERION-H1](#HYPERION-h1-price-limit-bypass-and-tick-desynchronization-in-swap-execution-in-pool_v3move): Price Limit Bypass and Tick Desynchronization in `pool_v3.move`, two medium-severity issues [HYPERION-M1](#HYPERION-h2-token-type-mismatch-in-pool-creation-in-router_v3move): Token Type Mismatch in `router_v3.move`), ([HYPERION-M2](#HYPERION-m1-seconds-outside-not-initialized-on-creation-in-tickmove): Seconds Outside Not Initialized in `tick.move`), and two informational issues ([HYPERION-I1](#HYPERION-i1-unnecessary-tick-rounding-in-pool-creation-in-pool_v3move), [I2](#HYPERION-i2-missing-emission-verification-in-tickmove). The high-severity issue, which could lead to recoverable financial harm and affect user intent, was swiftly addressed through collaboration with the Hyperion development team, reflecting their proactive security stance.
 
-The audit employed a robust methodology, including code review, mathematical verification, threat modeling, vulnerability testing, and architectural analysis, with a focus on economic risks and edge cases. Formal verification leveraged the Aptos Move prover, with custom scripts to resolve type conversion challenges in the Move-to-Boogie transpilation process. Key proofs validated critical functionalities such as tick crossing, fee growth updates, liquidity management, and reward system operations, ensuring protocol reliability. OShield’s recommendations aim to bolster long-term security and resilience, solidifying Hyperion DEX-V3’s role as a dependable component in the Aptos ecosystem.
+The audit employed a robust methodology, including code review, mathematical verification, threat modeling, vulnerability testing, and architectural analysis, with a focus on economic risks and edge cases. Formal verification leveraged the Aptos Move prover, with custom scripts to resolve type c onversion challenges in the Move-to-Boogie transpilation process. Key proofs validated critical functionalities such as tick crossing, fee growth updates, liquidity management, and reward system operations, ensuring protocol reliability. OShield’s recommendations aim to bolster long-term security and resilience, solidifying Hyperion DEX-V3’s role as a dependable component in the Aptos ecosystem.
 
 ## Table of Contents
 - [HYPERION DEX-V3 Audit Report](#HYPERION-dex-v3-audit-report)
@@ -24,8 +24,8 @@ The audit employed a robust methodology, including code review, mathematical ver
 		- [2.1. Findings Summary](#21-findings-summary)
 		- [2.2. Findings Description](#22-findings-description)
 			- [HYPERION-H1: Price Limit Bypass and Tick Desynchronization in Swap Execution in `pool_v3.move`](#HYPERION-h1-price-limit-bypass-and-tick-desynchronization-in-swap-execution-in-pool_v3move)
-			- [HYPERION-H2: Token Type Mismatch in Pool Creation in `router_v3.move`](#HYPERION-h1-token-type-mismatch-in-pool-creation-in-router_v3move)
-			- [HYPERION-M1: Seconds Outside Not Initialized on Creation in `tick.move`](#HYPERION-m1-seconds-outside-not-initialized-on-creation-in-tickmove)
+			- [HYPERION-M1: Token Type Mismatch in Pool Creation in `router_v3.move`](#HYPERION-m1-token-type-mismatch-in-pool-creation-in-router_v3move)
+			- [HYPERION-M2: Seconds Outside Not Initialized on Creation in `tick.move`](#HYPERION-m2-seconds-outside-not-initialized-on-creation-in-tickmove)
 			- [HYPERION-I1: Unnecessary Tick Rounding in Pool Creation in `pool_v3.move`](#HYPERION-i1-unnecessary-tick-rounding-in-pool-creation-in-pool_v3move)
 			- [HYPERION-I2: Missing Emission Verification in `tick.move`](#HYPERION-i2-missing-emission-verification-in-tickmove)
 	- [3. Protocol Overview](#3-protocol-overview)
@@ -62,8 +62,8 @@ Our severity classification system adheres to the criteria outlined here.
 | Finding | Description | Severity Level |
 |---------|-------------|----------------|
 | [HYPERION-H1]| Price Limit Bypass and Tick Desynchronization in Swap Execution in `pool_v3.move` | 🟠 High |
-| [HYPERION-H2]| Token Type Mismatch in Pool Creation in `router_v3.move` | 🟠 High |
-| [HYPERION-M1]| Seconds Outside Not Initialized on Creation in `tick.move` | 🟡 Medium |
+| [HYPERION-M1]| Token Type Mismatch in Pool Creation in `router_v3.move` | 🟡 Medium |
+| [HYPERION-M2]| Seconds Outside Not Initialized on Creation in `tick.move` | 🟡 Medium |
 | [HYPERION-I1]| Unnecessary Tick Rounding in Pool Creation in `pool_v3.move` | ℹ️ Informational |
 | [HYPERION-I2]| Missing Emission Verification in `tick.move` | ℹ️ Informational |
 
@@ -73,9 +73,9 @@ Our severity classification system adheres to the criteria outlined here.
 
 ##### Description
 
-In the [`pool_v3.move`](https://github.com/hyperionxyz/dex-v3/tree/main/sources/v3/pool_v3.move) module, there are two critical implementation issues that, when combined, create a systemic risk affecting trade execution precision, price reporting, and slippage protection. These findings are supported by data analysis of transaction patterns and detailed code review, and affect every swap that uses price limits, placing user funds at risk.
+In the [`pool_v3.move`](https://github.com/hyperionxyz/dex-v3/tree/main/sources/v3/pool_v3.move) module, there is an implementation issues that creates a systemic risk affecting trade execution precision, price reporting, and slippage protection. This finding is supported by data analysis of transaction patterns and detailed code review, and affect every swap that uses price limits, placing user funds at risk.
 
-The first issue relates to incorrect price limit enforcement in the `swap` function:
+The issue relates to incorrect price limit enforcement in the `swap` function:
 
 ```move
 while(state.amount_specified_remaining != 0 && state.sqrt_price != sqrt_price_limit) {
@@ -87,87 +87,68 @@ This implementation fails to enforce price limits correctly due to three fundame
 
 1. **Strict Equality Comparison**: The loop uses a strict equality check (`!=`) that only terminates when the price *exactly* equals the limit. Given the discrete nature of tick-based price movements, this exact match is mathematically unlikely, especially with non-tick-aligned price limits.
 
-2. **Direction-Specific Limit Requirements**:
-   - For token0 to token1 swaps (`a2b = true`), the price must stop *before* dropping to or below the limit
-   - For token1 to token0 swaps (`a2b = false`), the price must stop *before* rising to or above the limit
-   - The current implementation violates these requirements by allowing prices to reach or cross the limit
-
-3. **Potential Limit Overshooting and Non-Compliance with Uniswap V3**: In the swap computation, the implementation fails to implement a critical price limit safeguard that is standard in Uniswap V3. Specifically, `swap_math::compute_swap_step` passes arbitrary next prices without validating against the user's limit:
+2. **Missing Target Price Logic**: In the swap computation, the implementation fails to implement critical price limit validation logic. There should be logic in the code to determine the closest of the limit_price and the next_tick price up to which the swap will continue to execute. This is done as follows:
 
 ```move
-// At line 1634
-let (amount_in, amount_out, next_sqrt_price, fee_amount) =
-    swap_math::compute_swap_step(
-        state.sqrt_price,
-        sqrt_price_next,  // Next tick price without limit validation
-        state.liquidity,
-        state.amount_specified_remaining,
-        pool_mut.fee_rate,
-        a2b,
-        by_amount_in
-    );
-```
-
-This implementation deviates from Uniswap V3's standard behavior, where the code explicitly caps the target price at the user's limit when the next tick would cross it:
-
-```solidity
-// Uniswap V3 implementation in UniswapV3Pool.sol
-(state.sqrtPriceX96, step.amountIn, step.amountOut, step.feeAmount) = SwapMath.computeSwapStep(
-    state.sqrtPriceX96,
-    (zeroForOne ? step.sqrtPriceNextX96 < sqrtPriceLimitX96 : step.sqrtPriceNextX96 > sqrtPriceLimitX96)
-        ? sqrtPriceLimitX96  // Cap at limit if next tick would cross it
-        : step.sqrtPriceNextX96,
-    state.liquidity,
-    state.amountSpecifiedRemaining,
-    fee
-);
-```
-
-This omission in Hyperion allows the price to overshoot the user's limit in a single step when the next tick boundary lies beyond the limit. The lack of this standard safeguard means price updates can violate user intent without detection.
-
-The second issue creates a tick/price inconsistency during tick crossings:
-
-```move
-if(a2b) {
-    state.tick = i32::sub(tick_next, i32::from_u32(1));
-    // Missing: state.sqrt_price = tick_math::get_sqrt_price_at_tick(state.tick);
+let target_price = if(a2b) {
+    math128::max(sqrt_price_next, sqrt_price_limit)
 } else {
-    state.tick = tick_next;
-}
+    math128::min(sqrt_price_next, sqrt_price_limit)
+};
 ```
+The missing logic should determine the target price by comparing the next tick price with the user's specified limit:
 
-This creates a persistent misalignment between reported ticks and actual prices because:
-1. In token0 to token1 swaps, the tick index is decremented by 1 (correct behavior)
-2. However, the corresponding `sqrt_price` is not updated to match the new tick value
-3. This inconsistency accumulates across multiple tick crossings in a single swap
+- **For token0 to token1 swaps (a2b = true)**: The target price should be the maximum of sqrt_price_next and sqrt_price_limit, ensuring the price does not drop below the limit
+- **For token1 to token0 swaps (a2b = false)**: The target price should be the minimum of sqrt_price_next and sqrt_price_limit, ensuring the price does not rise above the limit
+
+This logic ensures that when the next tick boundary lies beyond the user's specified limit, the swap execution stops at the limit rather than overshooting it. The absence of this validation means price updates can violate the intended execution boundaries.
 
 ##### Impact
 
 This finding is classified as High due to the following factors:
-
-1. **Violated User Intent**: Users expect price limits to prevent execution beyond their specified thresholds. The current implementation fundamentally fails to honor this expectation, allowing trades to execute at prices worse than users specified.
-
-2. **Financial Loss**: When swaps execute beyond intended price limits, users receive worse execution prices than they consented to, resulting in direct financial harm.
-
-3. **Failed Slippage Protection**: The primary defense against market volatility and MEV attacks is compromised, exposing users to significant financial risk, especially in illiquid markets.
-
-4. **Systemic Error Accumulation**: For swaps that cross multiple ticks, the errors compound, as both the limit bypass and tick/price inconsistency multiply with each tick crossing.
-
-5. **Non-Compliance with Industry Standard**: The implementation deviates from the established Uniswap V3 standard for price limit protection. Users and integrators familiar with Uniswap V3's behavior will encounter unexpected and potentially harmful results when interacting with Hyperion DEX, as it lacks a safeguard present in the reference implementation.
-
-Every swap with a price limit is potentially affected, making this a systemic vulnerability rather than an edge case.
+- **Potential Price Limit Violations**: When swaps cross tick boundaries that exceed the specified price limit, execution may continue beyond the intended threshold.
+- **Slippage Protection Concerns**: The primary mechanism for controlling execution boundaries may not function as expected in certain market conditions.
+- **Execution Precision**: The lack of proper target price calculation can lead to less precise swap execution, particularly in volatile market conditions.
+- **Edge Case Scenarios**: While not affecting typical swap operations, this issue becomes relevant in scenarios where precise price limit enforcement is critical.
 
 ##### Implemented Solution
 
-To address this vulnerability, the developers implemented a fix that ensures proper enforcement of the user's specified price limit during swap execution. The updated code introduces a `target_price` that caps the next square root price (`sqrt_price_next`) at the `sqrt_price_limit` based on the swap direction (a2b):
+To address this vulnerability, the developers implemented a fix that ensures proper enforcement of the specified price limit during swap execution. The updated code introduces a target_price that caps the next square root price (sqrt_price_next) at the sqrt_price_limit based on the swap direction (a2b):
 
-For token0 to token1 swaps (a2b = true), the `target_price` is set to the maximum of `sqrt_price_next` and `sqrt_price_limit`, ensuring the price does not drop below the limit.
-For token1 to token0 swaps (a2b = false), the `target_price` is set to the minimum of `sqrt_price_next` and `sqrt_price_limit`, ensuring the price does not rise above the limit.
-This change aligns the implementation with Uniswap V3's standard behavior, where the target price is capped at the user's limit to prevent overshooting. 
+```move
+module dex_contract::pool_v3 {
+    use std::signer;
+    use std::vector;
+  + use aptos_std::math128;
+    use std::string::{String};
+    use aptos_std::timestamp;
+    use aptos_std::comparator;
+            [...]    
+		tick_next = tick_math::max_tick();
+            };
+            let sqrt_price_next = tick_math::get_sqrt_price_at_tick(tick_next);
+  +          let target_price = if(a2b) {
+  +              math128::max(sqrt_price_next, sqrt_price_limit)
+  +          } else {
+  +              math128::min(sqrt_price_next, sqrt_price_limit)
+  +          };
+
+            let (amount_in, amount_out, next_sqrt_price, fee_amount) =
+                swap_math::compute_swap_step(
+                    state.sqrt_price,
+REMOVED             sqrt_price_next,
+  +                  target_price,
+                    state.liquidity,
+                    state.amount_specified_remaining,
+                    pool_mut.fee_rate,
+
+```
+This change ensures that the target price is properly calculated by comparing the next tick price with the user's limit, preventing execution beyond the specified boundaries.
+
 - [View File ](https://github.com/hyperionxyz/dex-v3/blob/3cb6854e54ee50eab707fb3cc8d8fe0e4e8e4008/sources/v3/pool_v3.move#L1921-L1936)
 - [View Commit ](https://github.com/hyperionxyz/dex-v3/commit/3cb6854e54ee50eab707fb3cc8d8fe0e4e8e4008#diff-4df44619a3e80d7da552eb8697dcc578837256cd3c46b1842a8213584601ca28R1921)
 
-#### HYPERION-H2: Token Type Mismatch in Pool Creation in `router_v3.move`
+#### HYPERION-M1: Token Type Mismatch in Pool Creation in `router_v3.move`
 
 ##### Description
 
@@ -220,7 +201,7 @@ public entry fun create_pool_both_coins<CoinType1, CoinType2>(
 - [View Commit ](https://github.com/hyperionxyz/dex-v3/commit/a2301eb1a8833b4f72600cf12b61ef2c7dc1e69a)
 
 
-#### HYPERION-M1: Seconds Outside Not Initialized on Creation in `tick.move`
+#### HYPERION-M2: Seconds Outside Not Initialized on Creation in `tick.move`
 
 ##### Description
 
