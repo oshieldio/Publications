@@ -1,8 +1,10 @@
 
 # HYPERION DEX-V3 Audit Report
 
+
+
 <div align="center">
-<img src="../logo/logo.png" width="200" height="200" alt="OShield Logo">
+<img src="/Users/icarus/Desktop/Icarus/logo.png" width="200" height="200" alt="OShield Logo">
 </div>
 
 **Authors:**  
@@ -14,7 +16,7 @@
 
 OShield performed a thorough audit of the Hyperfluid DEX-V3 protocol, a decentralized exchange on the Aptos blockchain featuring a hybrid Orderbook-AMM model. The audit identified six vulnerabilities: one high-severity issue ([HYPERION-H1](#HYPERION-h1-price-limit-bypass-and-tick-desynchronization-in-swap-execution-in-pool_v3move): Price Limit Bypass and Tick Desynchronization in `pool_v3.move`, two medium-severity issues [HYPERION-M1](#HYPERION-m1-token-type-mismatch-in-pool-creation-in-router_v3move): Token Type Mismatch in `router_v3.move`), ([HYPERION-M2](#HYPERION-m2-seconds-outside-not-initialized-on-creation-in-tickmove): Seconds Outside Not Initialized in `tick.move`), and two informational issues ([HYPERION-I1](#HYPERION-i1-unnecessary-tick-rounding-in-pool-creation-in-pool_v3move), [I2](#HYPERION-i2-missing-emission-verification-in-tickmove). The high-severity issue, which could lead to recoverable financial harm and affect user intent, was swiftly addressed through collaboration with the Hyperion development team, reflecting their proactive security stance.
 
-The audit employed a robust methodology, including code review, mathematical verification, threat modeling, vulnerability testing, and architectural analysis, with a focus on economic risks and edge cases. Formal verification leveraged the Aptos Move prover, with custom scripts to resolve type c onversion challenges in the Move-to-Boogie transpilation process. Key proofs validated critical functionalities such as tick crossing, fee growth updates, liquidity management, and reward system operations, ensuring protocol reliability. OShield’s recommendations aim to bolster long-term security and resilience, solidifying Hyperion DEX-V3’s role as a dependable component in the Aptos ecosystem.
+The audit employed a robust methodology, including code review, mathematical verification, threat modeling, vulnerability testing, and architectural analysis, with a focus on economic risks and edge cases. Formal verification leveraged the Aptos Move prover, with custom scripts to resolve type conversion challenges in the Move-to-Boogie transpilation process. Key proofs validated critical functionalities such as tick crossing, fee growth updates, liquidity management, and reward system operations, ensuring protocol reliability. OShield’s recommendations aim to bolster long-term security and resilience, solidifying Hyperion DEX-V3’s role as a dependable component in the Aptos ecosystem.
 
 ## Table of Contents
 - [HYPERION DEX-V3 Audit Report](#HYPERION-dex-v3-audit-report)
@@ -57,10 +59,17 @@ Our severity classification system adheres to the criteria outlined here.
 | 🔵 Low | Implementation variance, uncommon scenarios | Zero financial implications, minor inconvenience | Program crashes in rare situations |
 | ℹ️ Informational | N/A | Recommendations for improvement | Design enhancements, best practices |
 
+
+
+
+
+
+
+
+
+
+
 ### 2.1. Findings Summary
-<br>
-<br>
-<br>
 
 | Finding | Description | Severity Level |
 |---------|-------------|----------------|
@@ -102,20 +111,17 @@ The missing logic should determine the target price by comparing the next tick p
 This finding is classified as High due to the following factors:
 - **Potential Price Limit Violations**: When swaps cross tick boundaries that exceed the specified price limit, execution may continue beyond the intended threshold.
 - **Slippage Protection Concerns**: The primary mechanism for controlling execution boundaries may not function as expected in certain market conditions.
-- **Undefined Swap Behaviour**: The lack of consistent target price calculation can cause swaps to respect the  `sqrt_price_limit` input only when it is exactly equal to the next tick's price and to ignore it otherwise, resulting in an undefined swap charachteresitcs.
+- **Undefined Swap Behavior**: The lack of consistent target price calculation can cause swaps to respect the  `sqrt_price_limit` input only when it is exactly equal to the next tick's price and to ignore it otherwise, resulting in an undefined swap characteristics.
 
 ##### Implemented Solution
 
 To address this vulnerability, the developers implemented a fix that ensures proper enforcement of the specified price limit during swap execution. The updated code introduces a target_price that caps the next square root price (sqrt_price_next) at the sqrt_price_limit based on the swap direction (a2b):
-
 ```move
 module dex_contract::pool_v3 {
     use std::signer;
     use std::vector;
   + use aptos_std::math128;
     use std::string::{String};
-    use aptos_std::timestamp;
-    use aptos_std::comparator;
             [...]    
 		tick_next = tick_math::max_tick();
             };
@@ -174,6 +180,12 @@ The second parameter incorrectly uses `CoinType1` again, instead of using `CoinT
 ##### Implemented Solution
 
 To address this vulnerability, the developers implemented a fix that ensures proper enforcement of the right token, setting the second parameter in the `create_pool` call to use `CoinType2` instead of repeating `CoinType1`:
+
+
+
+
+
+
 
 ```diff
 // In router_v3.move
@@ -239,7 +251,7 @@ The correct behavior should be:
 
 ##### Implemented Solution
 
-To address this vulnerability, the team decided that this issue will be fixed when implemeting the oracle.
+To address this vulnerability, the team decided that this issue will be fixed when implementing the oracle.
 
 
 #### HYPERION-I1: Unnecessary Tick Rounding in Pool Creation in `pool_v3.move`
@@ -340,13 +352,31 @@ Key components include:
 - **Router**: Handles user interactions including swaps and liquidity management
 - **Rewarder**: Distributes incentives to liquidity providers
 
+
+
 ### 3.1 Program Charts
 #### DEX-V3 Structure
 
 This diagram represents the core architecture of the DEX-V3 protocol. Components are organized by functionality with relationships showing dependencies. 
-<br>The structure illustrates how liquidity pools, positions, and router interact.
-<br>
-<br>
+The structure illustrates how liquidity pools, positions, and router interact.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ```mermaid
 classDiagram
 direction TB
@@ -708,6 +738,8 @@ direction TB
 ```
 
 
+
+
 #### Swap Execution
 
 The sequence diagram below illustrates the complete swap execution flow, showing interactions between the user, router, pool, and token contracts. The diagram captures the key steps from swap initiation through price calculation, tick crossing, fee accrual, and token transfers.
@@ -769,7 +801,7 @@ Our audit methodology for the hyperion DEX-V3 protocol followed a systematic app
 
 6. **Recommendations Development**: Formulation of specific, actionable remediation steps for each identified vulnerability.
 
-7. **Proof Execution and Debugging**: To run proofs for the protocol, we initially used the Aptos Move prover. However, as the Move language does not support signed integer arithmetic, there is a standalone package developed by the Hyperion team to do i32, i64 and i128 mathematical operations. This library causes the Move to Boogie transpiler in the aptos prover to fail to do correct type conversions for some of the proofs. This was a random occurence due the inherent randomness in the compilation process but it forced us to write a script that would manually pick up the outputted boogie file from the aptos move prover and correct them according to the following rules that we extracted by observing the error patterns in the compilation result: 
+7. **Proof Execution and Debugging**: To run proofs for the protocol, we initially used the Aptos Move prover. However, as the Move language does not support signed integer arithmetic, there is a standalone package developed by the Hyperion team to do i32, i64 and i128 mathematical operations. This library causes the Move to Boogie transpiler in the aptos prover to fail to do correct type conversions for some of the proofs. This was a random occurrence due to the inherent randomness in the compilation process but it forced us to write a script that would manually pick up the outputted boogie file from the aptos move prover and correct them according to the following rules that we extracted by observing the error patterns in the compilation result: 
 
 - Converting `int` to `bv32` in `$bb_i32_I32` constructor calls using `$int2bv.32`.
 - Adding `$bv2int.32` to assignments where `bv32` values are assigned to `int`.
@@ -778,11 +810,11 @@ Our audit methodology for the hyperion DEX-V3 protocol followed a systematic app
 - Adjusting procedure definitions (e.g., `$i32_from_u8`, `$i32_sign`, `$i32_u32_neg`) to use `bv32` instead of `int`.
 - Updating constants like `$tick_math_max_tick` to use `bv32` literals.
  
-For any proof that would fail due to these errors, we then run the script first to replace and restore the types correctly before running the boogie command explicity on the modified file. We have provided the boogie files for all the specifications that required this boogie intermediate manipulation step for reader to independently check the results. 
+For any proof that would fail due to these errors, we then run the script first to replace and restore the types correctly before running the boogie command explicitly on the modified file. We have provided the boogie files for all the specifications that required this boogie intermediate manipulation step for readers to independently check the results. 
 
 For some of the proofs, we had to manually deal with extra errors that we mention here for our reference and for the overall security community. 
 
-1) The move prover complains when conditional statements affect the assignment of both local and global variables. This innocent bug has an innocous solution whereby and let-if-else pattern could be used to prohibit the error from happening. As an example, in the following code taken from `tick_math`.move we encountered an error where the ratio variable is assigned again inside the if statement making the funciton impure.
+1) The move prover complains when conditional statements affect the assignment of both local and global variables. This innocent bug has an innocuous solution whereby a let-if-else pattern could be used to prohibit the error from happening. As an example, in the following code taken from `tick_math`.move we encountered an error where the ratio variable is assigned again inside the if statement making the function impure.
 
 ```move
 let ratio = if (abs_tick & 0x1 != 0) {
@@ -794,7 +826,9 @@ let ratio = if (abs_tick & 0x1 != 0) {
             ratio = full_math_u128::mul_shr(ratio, 18444899583751176498u128, 64u8)
         };
 ```
-Changin to a simple let-if-else pattern fixes the issue however and the prover runs without any issues. 
+Changing to a simple let-if-else pattern fixes the issue however, the prover runs without any issues. 
+
+
 
 ```move
  let ratio = if (abs_tick & 0x2 != 0) {
@@ -804,7 +838,7 @@ Changin to a simple let-if-else pattern fixes the issue however and the prover r
         };
 ```
 
-2) Some of the packages from the program would compile to a correct boogie but when running would complain about missing definitons or packages. One of these packages is the `package_manager.move` where the `get_signer` function is used to facilitate withdrawal from the pool. During execution, boogie would complain about missing definition of the `PermissionConfig` and create_signer functions which are native to Aptos packages. We had to comment these functions out to get the proper proves for the `dividen_from_pool` proofs outlined in the next section. 
+2) Some of the packages from the program would compile to a correct boogie but when running would complain about missing definitions or packages. One of these packages is the `package_manager.move` where the `get_signer` function is used to facilitate withdrawal from the pool. During execution, boogie would complain about missing definition of the `PermissionConfig` and create_signer functions which are native to Aptos packages. We had to comment these functions out to get the proper proves for the `dividen_from_pool` proofs outlined in the next section. 
 
 
  ## 5. Formal Verification
@@ -1409,6 +1443,13 @@ The primary objectives of the audit are defined as:
 
 - Clear attention to the documentation of the vulnerabilities with an eventual publication of a comprehensive audit report to the public audience for all stakeholders to understand the security status of the programs. 
 
+
+
+
+
+
+
+
 ### Repository Information
 
 | Item | Details |
@@ -1416,4 +1457,3 @@ The primary objectives of the audit are defined as:
 | Repository URL | https://github.com/hyperionxyz/dex-v3 |
 | Commit (start of audit) | a38458c536703115d5c9ad8a6202b6bc53481680 |
 | Commit (end of audit) | 3cb6854e54ee50eab707fb3cc8d8fe0e4e8e4008 (Oshield Branch)|
-
