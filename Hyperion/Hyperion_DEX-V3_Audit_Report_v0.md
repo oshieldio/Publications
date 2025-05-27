@@ -12,7 +12,7 @@
 
 ## Executive Summary
 
-OShield performed a thorough audit of the Hyperion DEX-V3 protocol, a decentralized exchange on the Aptos blockchain featuring a hybrid Orderbook-AMM model. The audit identified six vulnerabilities: two high-severity issues ([HYPERION-H1](#HYPERION-h1-price-limit-bypass-and-tick-desynchronization-in-swap-execution-in-pool_v3move): Price Limit Bypass and Tick Desynchronization in `pool_v3.move`, and [HYPERION-H2](#HYPERION-h2-token-type-mismatch-in-pool-creation-in-router_v3move): Token Type Mismatch in `router_v3.move`), one medium-severity issue ([HYPERION-M1](#HYPERION-m1-seconds-outside-not-initialized-on-creation-in-tickmove): Seconds Outside Not Initialized in `tick.move`), and three informational issues ([HYPERION-I1](#HYPERION-i1-unnecessary-tick-rounding-in-pool-creation-in-pool_v3move), [I2](#HYPERION-i2-missing-emission-verification-in-tickmove), [I3](#HYPERION-i3-missing-view-attributes-in-pool_v3move)). The high-severity issues, which could lead to recoverable financial harm and affect user intent, were swiftly addressed through collaboration with the Hyperion development team, reflecting their proactive security stance.
+OShield performed a thorough audit of the Hyperion DEX-V3 protocol, a decentralized exchange on the Aptos blockchain featuring a hybrid Orderbook-AMM model. The audit identified six vulnerabilities: two high-severity issues ([HYPERION-H1](#HYPERION-h1-price-limit-bypass-and-tick-desynchronization-in-swap-execution-in-pool_v3move): Price Limit Bypass and Tick Desynchronization in `pool_v3.move`, and [HYPERION-H2](#HYPERION-h2-token-type-mismatch-in-pool-creation-in-router_v3move): Token Type Mismatch in `router_v3.move`), one medium-severity issue ([HYPERION-M1](#HYPERION-m1-seconds-outside-not-initialized-on-creation-in-tickmove): Seconds Outside Not Initialized in `tick.move`), and two informational issues ([HYPERION-I1](#HYPERION-i1-unnecessary-tick-rounding-in-pool-creation-in-pool_v3move), [I2](#HYPERION-i2-missing-emission-verification-in-tickmove). The high-severity issues, which could lead to recoverable financial harm and affect user intent, were swiftly addressed through collaboration with the Hyperion development team, reflecting their proactive security stance.
 
 The audit employed a robust methodology, including code review, mathematical verification, threat modeling, vulnerability testing, and architectural analysis, with a focus on economic risks and edge cases. Formal verification leveraged the Aptos Move prover, with custom scripts to resolve type conversion challenges in the Move-to-Boogie transpilation process. Key proofs validated critical functionalities such as tick crossing, fee growth updates, liquidity management, and reward system operations, ensuring protocol reliability. OShield’s recommendations aim to bolster long-term security and resilience, solidifying Hyperion DEX-V3’s role as a dependable component in the Aptos ecosystem.
 
@@ -28,7 +28,6 @@ The audit employed a robust methodology, including code review, mathematical ver
 			- [HYPERION-M1: Seconds Outside Not Initialized on Creation in `tick.move`](#HYPERION-m1-seconds-outside-not-initialized-on-creation-in-tickmove)
 			- [HYPERION-I1: Unnecessary Tick Rounding in Pool Creation in `pool_v3.move`](#HYPERION-i1-unnecessary-tick-rounding-in-pool-creation-in-pool_v3move)
 			- [HYPERION-I2: Missing Emission Verification in `tick.move`](#HYPERION-i2-missing-emission-verification-in-tickmove)
-			- [HYPERION-I3: Missing View Attributes in `pool_v3.move`](#HYPERION-i3-missing-view-attributes-in-pool_v3move)
 	- [3. Protocol Overview](#3-protocol-overview)
 		- [3.1 Program Charts](#31-program-charts)
 			- [DEX-V3 Structure](#dex-v3-structure)
@@ -67,7 +66,6 @@ Our severity classification system adheres to the criteria outlined here.
 | [HYPERION-M1]| Seconds Outside Not Initialized on Creation in `tick.move` | 🟡 Medium |
 | [HYPERION-I1]| Unnecessary Tick Rounding in Pool Creation in `pool_v3.move` | ℹ️ Informational |
 | [HYPERION-I2]| Missing Emission Verification in `tick.move` | ℹ️ Informational |
-| [HYPERION-I3]| Missing View Attributes in `pool_v3.move` | ℹ️ Informational |
 
 ### 2.2. Findings Description
 
@@ -354,28 +352,6 @@ Implement stronger verification and tracking for emissions:
 ```
 
 If no change is made in the code, keep this in mind for DevOps.
-
-#### HYPERRION-I3: Missing View Attributes in `pool_v3.move`
-
-##### Description
-
-In the [`pool_v3.move`](https://github.com/hyperionxyz/dex-v3/tree/main/sources/v3/pool_v3.move) module, several functions that are intended to be read-only view functions lack the `#[view]` attribute. This attribute is important in the Move programming language as it designates functions that do not modify state and can be called without incurring gas costs from off-chain applications.
-
-It includes:
-
-1. `check_protocol_pause`
-2. `current_tick`
-
-Without the `#[view]` attribute, even simple data retrievals require submitting actual transactions that consume gas.
-
-##### Impact
-
-1. Increased costs for users due to unnecessary gas consumption
-
-##### Implemented Solution
-
-The developers decided that they do not intend to provide this two function as View. Users can fetch pool tick and price by pool_v3::current_tick_and_price.
-Add the `#[view]` attribute to all appropriate read-only functions in the codebase.
 
 
 ## 3. Protocol Overview
