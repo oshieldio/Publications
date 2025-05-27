@@ -73,9 +73,9 @@ Our severity classification system adheres to the criteria outlined here.
 
 ##### Description
 
-In the [`pool_v3.move`](https://github.com/hyperionxyz/dex-v3/tree/main/sources/v3/pool_v3.move) module, there are two critical implementation issues that, when combined, create a systemic risk affecting trade execution precision, price reporting, and slippage protection. These findings are supported by data analysis of transaction patterns and detailed code review, and affect every swap that uses price limits, placing user funds at risk.
+In the [`pool_v3.move`](https://github.com/hyperionxyz/dex-v3/tree/main/sources/v3/pool_v3.move) module,  there is a critical implementation issues that creates a systemic risk affecting trade execution precision, price reporting, and slippage protection. This finding is supported by data analysis of transaction patterns and detailed code review, and affect every swap that uses price limits, placing user funds at risk.
 
-The first issue relates to incorrect price limit enforcement in the `swap` function:
+The issue relates to incorrect price limit enforcement in the `swap` function:
 
 ```move
 while(state.amount_specified_remaining != 0 && state.sqrt_price != sqrt_price_limit) {
@@ -124,22 +124,6 @@ This implementation deviates from Uniswap V3's standard behavior, where the code
 ```
 
 This omission in Hyperion allows the price to overshoot the user's limit in a single step when the next tick boundary lies beyond the limit. The lack of this standard safeguard means price updates can violate user intent without detection.
-
-The second issue creates a tick/price inconsistency during tick crossings:
-
-```move
-if(a2b) {
-    state.tick = i32::sub(tick_next, i32::from_u32(1));
-    // Missing: state.sqrt_price = tick_math::get_sqrt_price_at_tick(state.tick);
-} else {
-    state.tick = tick_next;
-}
-```
-
-This creates a persistent misalignment between reported ticks and actual prices because:
-1. In token0 to token1 swaps, the tick index is decremented by 1 (correct behavior)
-2. However, the corresponding `sqrt_price` is not updated to match the new tick value
-3. This inconsistency accumulates across multiple tick crossings in a single swap
 
 ##### Impact
 
