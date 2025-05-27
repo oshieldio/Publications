@@ -117,7 +117,8 @@ To address this vulnerability, the developers implemented a fix that ensures pro
 For token0 to token1 swaps (a2b = true), the `target_price` is set to the maximum of `sqrt_price_next` and `sqrt_price_limit`, ensuring the price does not drop below the limit.
 For token1 to token0 swaps (a2b = false), the `target_price` is set to the minimum of `sqrt_price_next` and `sqrt_price_limit`, ensuring the price does not rise above the limit.
 This change aligns the implementation with Uniswap V3's standard behavior, where the target price is capped at the user's limit to prevent overshooting. 
-<img width="1125" alt="image" src="https://github.com/user-attachments/assets/5f5e10e0-d83e-4276-9f79-d7ebd6281ad1" />
+<img width="800" height="400" alt="image" src="https://github.com/user-attachments/assets/5f5e10e0-d83e-4276-9f79-d7ebd6281ad1" />
+
 
 
 - [View File ](https://github.com/hyperionxyz/dex-v3/blob/3cb6854e54ee50eab707fb3cc8d8fe0e4e8e4008/sources/v3/pool_v3.move#L1921-L1936)
