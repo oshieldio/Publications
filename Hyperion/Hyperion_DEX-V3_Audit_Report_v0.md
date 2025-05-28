@@ -179,25 +179,32 @@ The second parameter incorrectly uses `CoinType1` again, instead of using `CoinT
 
 ##### Implemented Solution
 
-To address this vulnerability, the developers implemented a fix that ensures proper enforcement of the right token, setting the second parameter in the `create_pool` call to use `CoinType2` instead of repeating `CoinType1`:
+Since Aptos has gradually moved from the Coin module to the Fungible Asset standard,the developers have decided to remove this function to follow the ecosystem trend.
 
 ```diff
 // In router_v3.move
++   const EDEPRECATED: u64 = 200010;
+[...]
 public entry fun create_pool_both_coins<CoinType1, CoinType2>(
-    fee_tier: u8,
-    tick: u32,
-) {
-    create_pool(
-        coin::paired_metadata<CoinType1>().extract(),
--       coin::paired_metadata<CoinType1>().extract(),
-+       coin::paired_metadata<CoinType2>().extract(),
-        fee_tier,
-        tick,
-    );
-}
+-        fee_tier: u8,
+-        tick: u32,
++        _fee_tier: u8,
++        _tick: u32,
+    ) {
+-        create_pool(
+-            coin::paired_metadata<CoinType1>().extract(),
+-            coin::paired_metadata<CoinType2>().extract(),
+-            fee_tier,
+-            tick,
+-        );
++        abort(DEPRECATED);
+ }
+
 ```
-- [View File ](https://github.com/hyperionxyz/dex-v3/blob/a2301eb1a8833b4f72600cf12b61ef2c7dc1e69a/sources/v3/router_v3.move#L52-L62)
-- [View Commit ](https://github.com/hyperionxyz/dex-v3/commit/a2301eb1a8833b4f72600cf12b61ef2c7dc1e69a)
+
+- [View File ](https://github.com/Hyperionxyz/dex-v3/blob/233fd819c8732e63faf69990f62df014b48ba6a7/sources/v3/router_v3.move#L53-L58)
+- [View Commit ](https://github.com/Hyperionxyz/dex-v3/commit/2a05196740690845a4b2d5c9e8b887bb7c42ab12)
+
 
 
 #### HYPERION-M2: Seconds Outside Not Initialized on Creation in `tick.move`
