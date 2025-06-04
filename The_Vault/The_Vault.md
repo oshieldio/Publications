@@ -2,7 +2,7 @@
 
 
 <div align="center">
-<img src="../../logo/oshield.png" width="500" height="100" alt="OShield Logo">
+<img src="../logo/logo.png" width="200" height="200" alt="OShield Logo">
 </div>
 
 **Mad Shield**
