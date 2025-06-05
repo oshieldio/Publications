@@ -124,7 +124,7 @@ LP tokens. The balance of the `sol_vault` is now `890880` and the LP total suppl
 5. The Victim wants to deposit `1` SOL. The program calculates the amaount of LP tokens in the following way: `1 * 1000000000 / 1000890880`
 which is equal to zero. The Victim deposited `1` SOL, but didn't get any LP. The Attacker with 1 LP token can withdraw entire `sol_vault` balance.
 
-Proposed solutons:
+Proposed solutions:
 - Introduce check that minting 0 LP tokens is not allowed.
 - UniswapV2 style - locking fixed portion of LP tokens on first mint.
 - OpenZeppelin style - decimal offset. [1]
