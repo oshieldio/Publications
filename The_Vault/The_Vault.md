@@ -75,7 +75,7 @@ VAULT-01</br><span style="color:green">Resolved</span>  | Vault Vulnerable to In
 VAULT-02</br><span style="color:green">Resolved</span> | The Linear Fee Can Be Bypassed by Splitting Stakes | <span style="color:orange">High</span>
 VAULT-03</br><span style="color:green">Resolved</span> | Shifting Deactivating Stakes Between Pools Blocks Funds Temporarily | <span style="color:yellow">Medium</span> 
 VAULT-04</br><span style="color:green">Resolved</span> | Inconsistency Between Unstaking Stake Account and LST Amounts | <span style="color:blue">Low</span>
-VAULT-05</br><span style="color:green">Acknowledged</span> | Unnecessary Check on the liquid_unstake_stake_account Instruction | <span style="color:green">Informational</span>
+VAULT-05</br><span style="color:green">Resolved</span> | Unnecessary Check on the liquid_unstake_stake_account Instruction | <span style="color:green">Informational</span>
 VAULT-06</br><span style="color:green">Resolved</span> | Lack of Fee Input Controls | <span style="color:green">Informational</span>
 VAULT-07</br><span style="color:green">Resolved</span> | Unnecessary Bump Assignment | <span style="color:green">Informational</span>
 
