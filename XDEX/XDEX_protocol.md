@@ -406,17 +406,20 @@ fn has_transfer_fee_extension(mint_account_info: &AccountInfo) -> Result<bool> {
 In the initialization code, this function is used to find out if the Transfer Fee extension exists on the token mint. If so, the instruction returns an error citing the extension not currently being supported.
 
 ```rust
-let stake_has_transfer_fee =
-    has_transfer_fee_extension(&ctx.accounts.stake_mint.to_account_info())?;
-require!(!stake_has_transfer_fee, ErrorCode::TransferFeeNotSupported);
+// Critical: Check if stake token has Transfer Fee Extension
+if ctx.accounts.stake_mint.to_account_info().owner == &token_2022::ID {
+    let stake_has_transfer_fee =
+        has_transfer_fee_extension(&ctx.accounts.stake_mint.to_account_info())?;
+    require!(!stake_has_transfer_fee, ErrorCode::TransferFeeNotSupported);
+}
 
 // Critical: Check if reward token has Transfer Fee Extension
-let reward_has_transfer_fee =
-    has_transfer_fee_extension(&ctx.accounts.reward_mint.to_account_info())?;
-require!(!reward_has_transfer_fee, ErrorCode::TransferFeeNotSupported);
+if ctx.accounts.reward_mint.to_account_info().owner == &token_2022::ID {
+    let reward_has_transfer_fee =
+        has_transfer_fee_extension(&ctx.accounts.reward_mint.to_account_info())?;
+    require!(!reward_has_transfer_fee, ErrorCode::TransferFeeNotSupported);
+}
 ```
-
-
 
  *Patch Commit: [590c1b737af54de71b8ea06b8aefb349e9d4f7a3](https://github.com/XDEX-Labs/XDEX_contract/commit/590c1b737af54de71b8ea06b8aefb349e9d4f7a3)*
 
@@ -433,10 +436,12 @@ The program assumes that the `stake_token_mint` and `reward_token_mint` are the 
 Enforce that `stake_token_mint` and `reward_token_mint` are the same token in the `Initialize` struct.
 
 ```rust
-
+#[account(
+    constraint = stake_mint.key() == reward_mint.key() @ ErrorCode::InvalidTokenPair
+)]
 ```
 
- *Patch Commit:*
+ *Patch Commit:* [52f81d6b9c26a39ccab6d83b0c3fce0f9a431161](https://github.com/XDEX-Labs/XDEX_contract/commit/52f81d6b9c26a39ccab6d83b0c3fce0f9a431161)
 
 
 <a id="xdex-stake-h4"></a>
@@ -550,15 +555,15 @@ fn has_transfer_fee_extension(mint_account_info: &AccountInfo) -> Result<bool> {
 In the initialization code, this function is used to find out if the Transfer Fee extension exists on the token mint. If so, the instruction returns an error citing the extension not currently being supported.
 
 ```rust
-
-if stake_token_mint.to_account_info().owner == &token_2022::ID {
+// Critical: Check if stake token has Transfer Fee Extension
+if ctx.accounts.stake_mint.to_account_info().owner == &token_2022::ID {
     let stake_has_transfer_fee =
         has_transfer_fee_extension(&ctx.accounts.stake_mint.to_account_info())?;
     require!(!stake_has_transfer_fee, ErrorCode::TransferFeeNotSupported);
 }
 
 // Critical: Check if reward token has Transfer Fee Extension
-if reward_token_mint.to_account_info().owner == &token_2022::ID {
+if ctx.accounts.reward_mint.to_account_info().owner == &token_2022::ID {
     let reward_has_transfer_fee =
         has_transfer_fee_extension(&ctx.accounts.reward_mint.to_account_info())?;
     require!(!reward_has_transfer_fee, ErrorCode::TransferFeeNotSupported);
