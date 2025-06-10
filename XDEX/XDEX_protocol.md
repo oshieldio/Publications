@@ -430,12 +430,10 @@ The program assumes that the `stake_token_mint` and `reward_token_mint` are the 
 
 **Recommended Fix**
 
-Add a check in the initialize function to enforce `stake_token_mint` equals `reward_token_mint`
+Enforce that `stake_token_mint` and `reward_token_mint` are the same token in the `Initialize` struct.
 
 ```rust
-if stake_token_mint != reward_token_mint {
-    return Err(Error::InvalidTokenMint);
-}
+
 ```
 
  *Patch Commit:*
@@ -568,7 +566,7 @@ if reward_token_mint.to_account_info().owner == &token_2022::ID {
 ```
 
 
-*Patch Commit:*
+*Patch Commit:* [590c1b737af54de71b8ea06b8aefb349e9d4f7a3](https://github.com/XDEX-Labs/XDEX_contract/commit/590c1b737af54de71b8ea06b8aefb349e9d4f7a3)
 
 
 <a id="xdex-farm-m1"></a>
@@ -656,6 +654,3 @@ The last key focus area was ensuring the composability of each protocol with Sol
     | Repository URL | https://github.com/XDEX-Labs/XDEX_contract |
     | Commit (start of audit) | 94004f8d0877f95c43eac382ec71bd1671adff89 |
     | Commit (end of audit) | 57eb76137382e80b8110087fa08b2696fdd3ba9c |
- 
-
-
