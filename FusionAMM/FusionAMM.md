@@ -529,4 +529,4 @@ The primary objectives of the audit are defined as:
 |------|---------|
 | Repository URL | https://github.com/DefiTuna/fusionamm |
 | Commit (start of audit) | a51ad6ddf4489ce0c62830a36c2fd32d9408b116 |
-| Commit (end of audit) | TBD|
+| Commit (end of audit) | 1a446b29be7da222ccd6743037c6c833bc4ac14b |
