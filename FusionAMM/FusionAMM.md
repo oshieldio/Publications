@@ -67,32 +67,6 @@ Our severity classification system adheres to the criteria outlined here.
 
 ### 2.2. Findings Description
 
-#### FUSIONAMM-H1: Infinite Protocol Fee Collectio
-
-##### Description
-
-The `fusion_pool` account in the `CollectProtocolFees` instruction is missing the `#[account(mut)]` constraint, preventing pool state changes from persisting to the blockchain.
-
-```rust
-pub fusion_pool: Box<Account<'info, FusionPool>>,  // Missing #[account(mut)]
-```
-As trading continues, protocol fees accumulate normally, but each collection call drains the previously "collected" amount plus any new fees. Repeated calls will systematically empty the entire pool vault balance.
-
-##### Impact
-
-• **Complete pool drainage**: Protocol authority will systematically drain entire pool vault balances through repeated fee collection calls
-• **Loss of user funds**: Liquidity providers lose their deposited tokens as vaults are emptied beyond legitimate protocol fees
-• **Trust erosion**: Users lose confidence in protocol security when funds can disappear without legitimate cause
-
-##### Implemented Solution
-
-To address this vulnerability, the developers add the  missing `#[account(mut)]` constraint:
-
-```rust
-#[account(mut)]
-pub fusion_pool: Box<Account<'info, FusionPool>>,
-```
-- [View Commit ](https://github.com/DefiTuna/fusionamm/commit/59b3fd34c3e4a0167efa30281117d67c5a32e563)
 
 #### FUSIONAMM-C1: Incorrect Take Order Placement in Limit Order Manage
 
