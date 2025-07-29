@@ -74,7 +74,10 @@ Our severity classification system adheres to the criteria outlined here.
 
 The limit order validation logic in `limit_order_manager.rs` incorrectly allows limit orders to be placed when they should be executed immediately as take orders. The vulnerable condition fails to properly validate order placement when the current tick index equals the limit order tick index.
 ```rust
-if limit_order.b_to_a && tick_curr_index == limit_index {
+let is_taker_order = (fusion_pool.tick_current_index < limit_order.tick_index) ^ limit_order.a_to_b;
+
+
+// condition fails if limit_order.b_to_a && fusion_pool.tick_current_index == limit_order.tick_index
 ```
 
 ##### Impact
