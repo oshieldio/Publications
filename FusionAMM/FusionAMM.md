@@ -16,7 +16,7 @@ OShield performed a comprehensive security audit of the FusionAMM protocol, a de
 The audit employed a systematic methodology including semantic code analysis, vulnerability pattern recognition, comparative analysis with established protocols (Orca Whirlpools), and edge case testing. Particular attention was given to fee collection mechanisms, limit order accounting, and token extension compatibility. OShield's recommendations focus on implementing proper account constraints, checked arithmetic operations, and robust validation mechanisms to ensure FusionAMM's security and reliability within the Solana DeFi ecosystem.
 
 ## Table of Contents
-- [HYPERION DEX-V3 Audit Report](#FUSIONAMM-audit-report)
+- [FusionAMM Audit Report](#FUSIONAMM-audit-report)
 	- [Table of Contents](#table-of-contents)
 	- [1. Introduction](#1-introduction)
 	- [2. Findings \& Recommendations](#2-findings--recommendations)
