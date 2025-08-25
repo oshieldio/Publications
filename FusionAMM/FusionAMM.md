@@ -31,7 +31,6 @@ The audit employed a systematic methodology including semantic code analysis, vu
 			- [DEX-V3 Structure](#FusionAMM-structure)
 			- [Swap Execution](#swap-execution)
 	- [4. Methodology](#4-methodology)
- 	- [5 Formal Verification](#5-formal-verification)
 	- [6. Scope and Objectives](#6-scope-and-objectives)
 		- [Repository Information](#repository-information)
 
@@ -486,7 +485,7 @@ Our audit methodology for the FusionAMM protocol followed a systematic approach:
 
 6. **Recommendations Development**: Formulation of specific, actionable remediation steps for each identified vulnerability.
 
-## 6. Scope and Objectives
+## 5. Scope and Objectives
 
 The primary objectives of the audit are defined as:
 
