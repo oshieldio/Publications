@@ -10,7 +10,7 @@
 - Mikb – [mika@oshield.io](mailto:mika@oshield.io)
 
 ## Executive Summary
-OShield performed a comprehensive security audit of the Tuna protocol, a decentralized leveraged trading protocol on the Solana blockchain featuring spot trading and limit order functionality. The audit identified 6 vulnerabilities: 2 critical-severity issues [TUNA-C1: Precision Loss in Repay Amount Calculation](#tuna-c1-precision-loss-in-repay-amount-calculation), and [Tuna-C2: Post-Swap Leverage Miscalculation Vulnerability](#tuna-c2-post-swap-leverage-miscalculation-vulnerability), 1 high-severity issue [TUNA-H1: Inconsistent Oracle Usage in Position Health Checks](#tuna-h1-inconsistent-oracle-usage-in-position-health-checks), 2 medium-severity issues [TUNA-M1: Collateral Increase via Direct Transfer and Zero-Fee](#tuna-m1-collateral-increase-via-direct-transfer-and-zero-fee) and [TUNA-M2: Incorrect Tick Index Calculation](#tuna-m2-incorrect-tick-index-calculation), 1 low-severity issue [TUNA-L1: Non-Borrowed Position Cannot Be Decreased](#tuna-l1-non-borrowed-position-cannot-be-decreased). The critical-severity issues posed a threat to protocol funds, while the high-severity issue could lead to position corruption affecting all users. The audit employed a systematic methodology including semantic code analysis, vulnerability pattern recognition, comparative analysis with established protocols (Orca Whirlpools and FusionAMM), and edge case testing. Particular attention was given to debt repayment mechanisms, position health checks, and oracle price validation. OShield's recommendations focus on implementing proper position state constraints, checked arithmetic operations with minimum repayment thresholds, and consistent oracle validation mechanisms to ensure Tuna's security and reliability within the Solana DeFi ecosystem.
+OShield performed a comprehensive security audit of the Tuna protocol, a decentralized leveraged trading protocol on the Solana blockchain featuring spot trading and limit order functionality. The audit identified 6 vulnerabilities: 2 critical-severity issues [TUNA-C1: Precision Loss in Repay Amount Calculation](#tuna-c1-precision-loss-in-repay-amount-calculation), and [Tuna-C2: Post-Swap Leverage Miscalculation](#tuna-c2-post-swap-leverage-miscalculation), 1 high-severity issue [TUNA-H1: Inconsistent Oracle Usage in Position Health Checks](#tuna-h1-inconsistent-oracle-usage-in-position-health-checks), 2 medium-severity issues [TUNA-M1: Collateral Increase via Direct Transfer and Zero-Fee](#tuna-m1-collateral-increase-via-direct-transfer-and-zero-fee) and [TUNA-M2: Incorrect Tick Index Calculation](#tuna-m2-incorrect-tick-index-calculation), 1 low-severity issue [TUNA-L1: Non-Borrowed Position Cannot Be Decreased](#tuna-l1-non-borrowed-position-cannot-be-decreased). The critical-severity issues posed a threat to protocol funds, while the high-severity issue could lead to position corruption affecting all users. The audit employed a systematic methodology including semantic code analysis, vulnerability pattern recognition, comparative analysis with established protocols (Orca Whirlpools and FusionAMM), and edge case testing. Particular attention was given to debt repayment mechanisms, position health checks, and oracle price validation. OShield's recommendations focus on implementing proper position state constraints, checked arithmetic operations with minimum repayment thresholds, and consistent oracle validation mechanisms to ensure Tuna's security and reliability within the Solana DeFi ecosystem.
 
 ## Table of Contents
 - [Tuna Audit Report](#tuna-audit-report)
@@ -20,7 +20,7 @@ OShield performed a comprehensive security audit of the Tuna protocol, a decentr
 - [2.1. Findings Summary](#21-findings-summary)
 - [2.2. Findings Description](#22-findings-description)
 - [TUNA-C1: Precision Loss in Repay Amount Calculation](#tuna-c1-precision-loss-in-repay-amount-calculation)
-- [Tuna-C2: Post-Swap Leverage Miscalculation Vulnerability](#tuna-c2-post-swap-leverage-miscalculation-vulnerability)
+- [Tuna-C2: Post-Swap Leverage Miscalculation](#tuna-c2-post-swap-leverage-miscalculation)
 - [TUNA-H1: Inconsistent Oracle Usage in Position Health Checks](#tuna-h1-inconsistent-oracle-usage-in-position-health-checks)
 - [TUNA-M1: Collateral Increase via Direct Transfer and Zero-Fee](#tuna-m1-collateral-increase-via-direct-transfer-and-zero-fee)
 - [TUNA-M2: Incorrect Tick Index Calculation](#tuna-m2-incorrect-tick-index-calculation)
@@ -51,7 +51,7 @@ Our severity classification system adheres to the criteria outlined here.
 | Finding | Description | Severity Level |
 |---------|-------------|----------------|
 | [TUNA-C1] | Precision Loss in Repay Amount Calculation | 🔴 Critical |
-| [TUNA-C2] | Post-Swap Leverage Miscalculation Vulnerability | 🔴 Critical |
+| [TUNA-C2] | Post-Swap Leverage Miscalculation | 🔴 Critical |
 | [TUNA-H1] | Inconsistent Oracle Usage in Position Health Checks | 🟠 High |
 | [TUNA-M1] | Collateral Increase via Direct Transfer and Zero-Fee | 🟡 Medium |
 | [TUNA-M2] | Incorrect Tick Index Calculation | 🟡 Medium |
@@ -92,7 +92,7 @@ To fix this issue, the developers have decided to replace the integer division i
 
 - [View Commit](https://github.com/DefiTuna/tuna-programs/commit/ae2f557f2c512caf93e9ae837f04289c6e0d4368)
 
-#### TUNA-C2: Post-Swap Leverage Miscalculation Vulnerability
+#### TUNA-C2: Post-Swap Leverage Miscalculation
 ##### Description
 The `increase` function in `tuna_spot_position.rs` calculates the leverage of a position using the post-swap price of the pool, which can be manipulated by a large swap, leading to an incorrect assessment of leverage health. The problematic line is:
 
