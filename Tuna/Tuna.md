@@ -6,7 +6,7 @@
 
 
 - David P – [david@oshield.io](mailto:david@oshield.io)
-- BlueWolf – [wolf@oshield.io](mailto:blue@oshield.io)
+- BlueWolf – [blue@oshield.io](mailto:blue@oshield.io)
 - Mikb – [mika@oshield.io](mailto:mika@oshield.io)
 
 ## Executive Summary
