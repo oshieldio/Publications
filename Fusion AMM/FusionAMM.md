@@ -473,7 +473,7 @@ The sequence diagram illustrates the complete swap execution flow in FusionAMM, 
 
 Our audit methodology for the FusionAMM protocol followed a systematic approach:
 
-1. **Initial Code Review**: Comprehensive examination of the Move codebase to understand the protocol's architecture, components, and core functionality.
+1. **Initial Code Review**: Comprehensive examination of the Anchor codebase to understand the protocol's architecture, components, and core functionality.
 
 2. **Mathematical Verification**: Detailed analysis of the mathematical foundations, including liquidity calculations, price impact formulations, and token conversion mechanisms.
 
