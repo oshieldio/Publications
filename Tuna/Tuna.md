@@ -420,7 +420,7 @@ sequenceDiagram
 
 ## 4. Methodology
 Our audit methodology for the Tuna protocol followed a systematic approach:
-1. **Initial Code Review**: Comprehensive examination of the Move codebase to understand the protocol's architecture, components, and core functionality.
+1. **Initial Code Review**: Comprehensive examination of the Anchor codebase to understand the protocol's architecture, components, and core functionality.
 2. **Mathematical Verification**: Detailed analysis of the mathematical foundations, including liquidity calculations, price impact formulations, and token conversion mechanisms.
 3. **Threat Modeling**: Identification of potential attack vectors, focusing on economic exploits, manipulation possibilities, and edge cases.
 4. **Vulnerability Testing**: Development of specific test cases to verify identified vulnerabilities, particularly the decimal normalization issue which was thoroughly validated through both mathematical analysis and testnet experimentation.
