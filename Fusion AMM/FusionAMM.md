@@ -138,7 +138,7 @@ The development team addressed this vulnerability by implementing proper tick st
 
 - [View Commit ](https://github.com/DefiTuna/fusionamm/commit/3b6d13c747e28e9050de6f60fd056df9dbb9127a)
 
-#### FUSIONAMM-H1: Infinite Protocol Fee Collectio
+#### FUSIONAMM-H1: Infinite Protocol Fee Collection
 
 ##### Description
 
